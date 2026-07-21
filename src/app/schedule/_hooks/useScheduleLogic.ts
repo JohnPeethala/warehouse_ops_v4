@@ -1,0 +1,253 @@
+import { useState, useMemo, useCallback } from "react";
+import { 
+  updateDispatchLogField, 
+  appendNoteOrRemark, 
+  updateRouteSession,
+  bulkUpdateDispatchLogFields,
+  deleteDispatchLog,
+  updateDispatchLogFields
+} from "@/app/actions/schedule";
+
+export type ScheduleLog = any; // You can strongly type this later
+
+export function useScheduleLogic(initialLogs: ScheduleLog[]) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  const [colFilters, setColFilters] = useState<Record<string, Set<string> | null>>({});
+  const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'|null} | null>({ key: 'contact_name', direction: 'asc' });
+  
+  // Optimistic state for single fields
+  const [optimisticLogs, setOptimisticLogs] = useState<Record<string, Partial<ScheduleLog>>>({});
+
+  // Optimistic state for route sessions (affects all tickets in a route)
+  // Format: { [routeLetter]: { vehicle_id: "...", driver_id: "..." } }
+  const [optimisticSessions, setOptimisticSessions] = useState<Record<string, Record<string, string | null>>>({});
+
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  // Newly added logs from the UI
+  const [addedLogs, setAddedLogs] = useState<ScheduleLog[]>([]);
+
+  // 1. Merge optimistic state with server data + added logs
+  const data = useMemo(() => {
+    return [...initialLogs, ...addedLogs]
+      .filter(log => !deletedIds.has(log.id))
+      .map(log => {
+      const merged = { ...log, ...optimisticLogs[log.id] };
+      
+      const routeStr = merged.route?.toUpperCase() || "";
+      if (routeStr && optimisticSessions[routeStr]) {
+        merged.ops_route_sessions = {
+          ...(merged.ops_route_sessions || {}),
+          ...optimisticSessions[routeStr]
+        };
+      }
+      return merged;
+    });
+  }, [initialLogs, optimisticLogs, optimisticSessions]);
+
+  // 2. Group the merged data by route
+  const groupedData = useMemo(() => {
+    const groups: Record<string, ScheduleLog[]> = {};
+    const unassigned: ScheduleLog[] = [];
+
+    data.forEach(log => {
+      const route = log.route?.toUpperCase();
+      if (route) {
+        if (!groups[route]) groups[route] = [];
+        groups[route].push(log);
+      } else {
+        unassigned.push(log);
+      }
+    });
+
+    // Sort route keys alphabetically
+    const sortedGroups = Object.keys(groups).sort().map(key => ({
+      route: key,
+      tickets: groups[key] // We could apply sorting here later if needed
+    }));
+
+    if (unassigned.length > 0) {
+      sortedGroups.unshift({ route: "", tickets: unassigned });
+    }
+
+    return sortedGroups;
+  }, [data]);
+
+  const toggleSelectAll = () => {
+    const allIds = data.map(t => t.id);
+    if (selectedIds.size === allIds.length && allIds.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allIds));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const filterOptions = {
+    check: [], prio: [], schedule: [], date: [], route: [], tags: [], ops: []
+  };
+  
+  const nameCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    data.forEach(log => {
+      const name = log.contact_name?.trim() || "Unknown";
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return counts;
+  }, [data]);
+
+  const handleBulkUpdate = useCallback(async (field: string, value: string) => {
+    if (selectedIds.size === 0) return;
+    
+    const ids = Array.from(selectedIds);
+    
+    // Optimistic update
+    setOptimisticLogs(prev => {
+      const next = { ...prev };
+      const updates: any = { [field]: value };
+      if (field === 'route') {
+        updates.gt_trip_id = null;
+        updates.ops_route_sessions = null;
+      }
+      ids.forEach(id => {
+        next[id] = { ...next[id], ...updates };
+      });
+      return next;
+    });
+
+    // Server update
+    const res = await bulkUpdateDispatchLogFields(ids, { [field]: value });
+    if (!res.success) {
+      alert("Failed to bulk update: " + res.error);
+    }
+  }, [selectedIds]);
+
+  const handleFieldUpdate = useCallback(async (id: string, field: string, value: string) => {
+    if (selectedIds.has(id) && selectedIds.size > 1) {
+      handleBulkUpdate(field, value);
+      return;
+    }
+    
+    // Optimistic update
+    setOptimisticLogs(prev => {
+      const updates: any = { [field]: value };
+      if (field === 'route') {
+        updates.gt_trip_id = null;
+        updates.ops_route_sessions = null;
+      }
+      return {
+        ...prev,
+        [id]: { ...prev[id], ...updates }
+      };
+    });
+
+    // Server update
+    const res = await updateDispatchLogField(id, field, value);
+    if (!res.success) {
+      alert("Failed to update field: " + res.error);
+    }
+  }, [selectedIds, handleBulkUpdate]);
+
+  // Handle multiple fields update (e.g. status and sub_status)
+  const handleFieldsUpdate = useCallback((id: string, updates: Record<string, any>) => {
+    setOptimisticLogs(prev => ({
+      ...prev,
+      [id]: { ...(prev[id] || {}), ...updates }
+    }));
+    updateDispatchLogFields(id, updates);
+  }, []);
+
+  const handleAppendText = useCallback(async (id: string, field: 'notes' | 'remarks', newText: string) => {
+    // Server action returns the fully formatted string
+    const res = await appendNoteOrRemark(id, field, newText);
+    if (res.success && res.finalVal) {
+      setOptimisticLogs(prev => ({
+        ...prev,
+        [id]: { ...prev[id], [field]: res.finalVal }
+      }));
+    } else {
+      alert("Failed to add text: " + res.error);
+    }
+  }, []);
+
+  const handleRouteSessionUpdate = useCallback(async (
+    route: string, 
+    date: string, 
+    updates: Record<string, string | null>
+  ) => {
+    if (!route) return;
+
+    // Optimistic update
+    setOptimisticSessions(prev => ({
+      ...prev,
+      [route]: {
+        ...(prev[route] || {}),
+        ...updates
+      }
+    }));
+
+    // Server update
+    const res = await updateRouteSession(route, date, updates);
+    if (!res.success) {
+      alert("Failed to update route session: " + res.error);
+    }
+  }, []);
+
+  const handleDelete = useCallback(async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this ticket from the schedule?")) return;
+    
+    // Optimistic delete
+    setDeletedIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+
+    const res = await deleteDispatchLog(id);
+    if (!res.success) {
+      alert("Failed to delete ticket: " + res.error);
+      setDeletedIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, []);
+
+  const handleAddLogs = useCallback((newLogs: any[]) => {
+    setAddedLogs(prev => [...prev, ...newLogs]);
+  }, []);
+
+  const handleSort = useCallback((key: string) => {
+    setSortConfig(prev => prev?.key === key && prev.direction === 'asc' ? { key, direction: 'desc' } : { key, direction: 'asc' });
+  }, []);
+
+  return {
+    data,
+    groupedData,
+    selectedIds,
+    setSelectedIds,
+    handleFieldUpdate,
+    handleFieldsUpdate,
+    handleAppendText,
+    handleRouteSessionUpdate,
+    handleBulkUpdate,
+    handleDelete,
+    colFilters,
+    setColFilters,
+    sortConfig,
+    setSortConfig,
+    handleSort,
+    filterOptions,
+    nameCounts,
+    toggleSelectAll,
+    toggleSelect
+  };
+}

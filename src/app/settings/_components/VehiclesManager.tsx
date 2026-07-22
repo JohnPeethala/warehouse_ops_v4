@@ -9,6 +9,7 @@ export interface Vehicle {
   id: string;
   vehicle_no: string;
   driver_name: string;
+  driver_phone: string | null;
   is_active: boolean;
 }
 export function VehiclesManager({ initialData }: { initialData: Vehicle[] }) {
@@ -17,15 +18,17 @@ export function VehiclesManager({ initialData }: { initialData: Vehicle[] }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editVehicleNo, setEditVehicleNo] = useState("");
   const [editDriverName, setEditDriverName] = useState("");
+  const [editDriverPhone, setEditDriverPhone] = useState("");
   const [editIsActive, setEditIsActive] = useState(true);
 
-  const handleAdd = async (vehicleNo: string, driverName: string, isActive: boolean) => {
-    const res = await addVehicle(vehicleNo, driverName, isActive);
+  const handleAdd = async (vehicleNo: string, driverName: string, driverPhone: string, isActive: boolean) => {
+    const res = await addVehicle(vehicleNo, driverName, driverPhone, isActive);
     if (res.success) {
       setEntries([...entries, { 
         id: Date.now().toString(), // temporary ID until refresh
         vehicle_no: vehicleNo, 
-        driver_name: driverName, 
+        driver_name: driverName,
+        driver_phone: driverPhone,
         is_active: isActive 
       }]);
     } else {
@@ -50,6 +53,7 @@ export function VehiclesManager({ initialData }: { initialData: Vehicle[] }) {
     setEditingId(v.id);
     setEditVehicleNo(v.vehicle_no);
     setEditDriverName(v.driver_name || "");
+    setEditDriverPhone(v.driver_phone || "");
     setEditIsActive(v.is_active ?? true);
   };
 
@@ -60,9 +64,9 @@ export function VehiclesManager({ initialData }: { initialData: Vehicle[] }) {
   const saveEdit = async (id: string) => {
     if (!editVehicleNo.trim()) return;
     
-    const res = await updateVehicle(id, { vehicle_no: editVehicleNo.trim(), driver_name: editDriverName.trim(), is_active: editIsActive });
+    const res = await updateVehicle(id, { vehicle_no: editVehicleNo.trim(), driver_name: editDriverName.trim(), driver_phone: editDriverPhone.trim() || null, is_active: editIsActive });
     if (res.success) {
-      setEntries(entries.map(e => e.id === id ? { ...e, vehicle_no: editVehicleNo.trim(), driver_name: editDriverName.trim(), is_active: editIsActive } : e));
+      setEntries(entries.map(e => e.id === id ? { ...e, vehicle_no: editVehicleNo.trim(), driver_name: editDriverName.trim(), driver_phone: editDriverPhone.trim() || null, is_active: editIsActive } : e));
       setEditingId(null);
     } else {
       alert("Failed to update vehicle: " + res.error);
@@ -92,9 +96,11 @@ export function VehiclesManager({ initialData }: { initialData: Vehicle[] }) {
         editingId={editingId}
         editVehicleNo={editVehicleNo}
         editDriverName={editDriverName}
+        editDriverPhone={editDriverPhone}
         editIsActive={editIsActive}
         onEditVehicleNoChange={setEditVehicleNo}
         onEditDriverNameChange={setEditDriverName}
+        onEditDriverPhoneChange={setEditDriverPhone}
         onEditIsActiveChange={setEditIsActive}
         onEdit={startEdit}
         onCancelEdit={cancelEdit}

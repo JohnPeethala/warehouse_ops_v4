@@ -61,12 +61,12 @@ export async function deleteProfile(id: string) {
 // VEHICLE CRUD
 // -----------------------------
 
-export async function addVehicle(vehicle_no: string, driver_name: string, is_active: boolean = true) {
+export async function addVehicle(vehicle_no: string, driver_name: string, driver_phone: string | null = null, is_active: boolean = true) {
   const supabase = await createClient();
   
   const { error } = await supabase
     .from('core_vehicles')
-    .insert([{ vehicle_no, driver_name, is_active }]);
+    .insert([{ vehicle_no, driver_name, driver_phone, is_active }]);
 
   if (error) {
     console.error("Error adding vehicle:", error);

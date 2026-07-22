@@ -8,9 +8,11 @@ interface VehiclesTableProps {
   editingId: string | null;
   editVehicleNo: string;
   editDriverName: string;
+  editDriverPhone: string;
   editIsActive: boolean;
   onEditVehicleNoChange: (val: string) => void;
   onEditDriverNameChange: (val: string) => void;
+  onEditDriverPhoneChange: (val: string) => void;
   onEditIsActiveChange: (val: boolean) => void;
   onEdit: (v: Vehicle) => void;
   onCancelEdit: () => void;
@@ -24,9 +26,11 @@ export function VehiclesTable({
   editingId,
   editVehicleNo,
   editDriverName,
+  editDriverPhone,
   editIsActive,
   onEditVehicleNoChange,
   onEditDriverNameChange,
+  onEditDriverPhoneChange,
   onEditIsActiveChange,
   onEdit,
   onCancelEdit,
@@ -41,6 +45,7 @@ export function VehiclesTable({
           <tr>
             <th className="px-6 py-3.5 font-semibold">Vehicle No</th>
             <th className="px-6 py-3.5 font-semibold">Driver Name</th>
+            <th className="px-6 py-3.5 font-semibold">Driver Phone</th>
             <th className="px-6 py-3.5 font-semibold">Active</th>
             <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
           </tr>
@@ -48,7 +53,7 @@ export function VehiclesTable({
         <tbody className="divide-y divide-border">
           {entries.length === 0 ? (
             <tr>
-              <td colSpan={4} className="px-6 py-8 text-center text-foreground/50">
+              <td colSpan={5} className="px-6 py-8 text-center text-foreground/50">
                 No vehicles configured yet.
               </td>
             </tr>
@@ -67,7 +72,7 @@ export function VehiclesTable({
                     v.vehicle_no
                   )}
                 </td>
-                <td className="px-6 py-3 w-1/3 text-foreground/80">
+                <td className="px-6 py-3 w-1/4 text-foreground/80">
                   {editingId === v.id ? (
                     <input 
                       type="text" 
@@ -79,7 +84,19 @@ export function VehiclesTable({
                     v.driver_name || <span className="text-foreground/40 italic">Not Assigned</span>
                   )}
                 </td>
-                <td className="px-6 py-3 w-1/4">
+                <td className="px-6 py-3 w-1/4 text-foreground/80">
+                  {editingId === v.id ? (
+                    <input 
+                      type="text" 
+                      value={editDriverPhone} 
+                      onChange={e => onEditDriverPhoneChange(e.target.value)}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1 text-sm focus:outline-none focus:border-primary/50"
+                    />
+                  ) : (
+                    v.driver_phone || <span className="text-foreground/40 italic">No Phone</span>
+                  )}
+                </td>
+                <td className="px-6 py-3 w-[100px]">
                   <ActiveToggle 
                     isActive={editingId === v.id ? editIsActive : (v.is_active !== false)} 
                     isEditing={editingId === v.id} 

@@ -26,6 +26,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
           <TabItem icon={<Truck className="w-4 h-4" />} label="Vehicles" tabId="vehicles" activeTab={activeTab} />
           <TabItem icon={<FileText className="w-4 h-4" />} label="Ticket Statuses" tabId="lookups" activeTab={activeTab} />
           <TabItem icon={<MapPin className="w-4 h-4" />} label="Locations" tabId="locations" activeTab={activeTab} />
+          <TabItem icon={<FileText className="w-4 h-4" />} label="Reports Download" tabId="reports" activeTab={activeTab} />
         </div>
       </div>
 

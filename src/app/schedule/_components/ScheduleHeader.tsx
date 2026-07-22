@@ -19,8 +19,6 @@ export function ScheduleHeader({
   setIsNotDoneModalOpen,
   setIsProgressModalOpen,
   setIsAddModalOpen,
-  isBulkCopyModalOpen,
-  setIsBulkCopyModalOpen,
 }: {
   headerEl: HTMLElement | null;
   isReportsOpen: boolean;
@@ -29,8 +27,6 @@ export function ScheduleHeader({
   setIsNotDoneModalOpen: (open: boolean) => void;
   setIsProgressModalOpen: (open: boolean) => void;
   setIsAddModalOpen: (open: boolean) => void;
-  isBulkCopyModalOpen: boolean;
-  setIsBulkCopyModalOpen: (open: boolean) => void;
 }) {
   const {
     totalTickets,
@@ -313,17 +309,9 @@ export function ScheduleHeader({
             Add Tickets
           </button>
           <button 
-            onClick={(e) => {
-              if (e.detail === 1) {
-                setTimeout(() => {
-                  if (!isBulkCopyModalOpen) handleCopyData();
-                }, 250);
-              } else if (e.detail === 2) {
-                setIsBulkCopyModalOpen(true);
-              }
-            }}
+            onClick={() => handleCopyData()}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap border border-border bg-background hover:bg-muted text-foreground"
-            title="Copy displayed (single click) or Bulk Copy by date (double click)"
+            title="Copy displayed tickets to clipboard"
           >
             <Copy size={16} />
             Copy

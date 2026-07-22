@@ -4,6 +4,7 @@ import { TeamManager } from "./_components/TeamManager";
 import { VehiclesManager } from "./_components/VehiclesManager";
 import { LookupStatusManager } from "./_components/LookupStatusManager";
 import { GeoLocationsManager } from "./_components/GeoLocationsManager";
+import { ReportsManager } from "./_components/ReportsManager";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   } else if (activeTab === "locations") {
     const { data: locationsData } = await supabase.from("cfg_geo_zones").select("*").order("area");
     data = locationsData;
+  } else if (activeTab === "reports") {
+    const { data: profiles } = await supabase.from("core_profiles").select("*");
+    const { data: vehicles } = await supabase.from("core_vehicles").select("*");
+    data = { profiles: profiles || [], vehicles: vehicles || [] };
   }
 
   return (
@@ -41,6 +46,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         {activeTab === "vehicles" && <VehiclesManager initialData={data || []} />}
         {activeTab === "lookups" && <LookupStatusManager initialData={data || []} />}
         {activeTab === "locations" && <GeoLocationsManager initialData={data || []} />}
+        {activeTab === "reports" && <ReportsManager initialData={data || { profiles: [], vehicles: [] }} />}
       </div>
     </SettingsLayout>
   )

@@ -3,7 +3,6 @@
 import React from "react";
 import { useScheduleContext } from "./ScheduleContext";
 import { AddTicketsModal } from "./AddTicketsModal";
-import { BulkCopyModal } from "./BulkCopyModal";
 import { SummaryModal } from "./SummaryModal";
 import { ProgressSummaryModal } from "./ProgressSummaryModal";
 import { NotDoneSummaryModal } from "./NotDoneSummaryModal";
@@ -11,8 +10,6 @@ import { NotDoneSummaryModal } from "./NotDoneSummaryModal";
 export function ScheduleModalsManager({
   isAddModalOpen,
   setIsAddModalOpen,
-  isBulkCopyModalOpen,
-  setIsBulkCopyModalOpen,
   isSummaryModalOpen,
   setIsSummaryModalOpen,
   isProgressModalOpen,
@@ -22,8 +19,6 @@ export function ScheduleModalsManager({
 }: {
   isAddModalOpen: boolean;
   setIsAddModalOpen: (open: boolean) => void;
-  isBulkCopyModalOpen: boolean;
-  setIsBulkCopyModalOpen: (open: boolean) => void;
   isSummaryModalOpen: boolean;
   setIsSummaryModalOpen: (open: boolean) => void;
   isProgressModalOpen: boolean;
@@ -46,13 +41,6 @@ export function ScheduleModalsManager({
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
         onTicketsAdded={handleAddLogs} 
-      />
-
-      <BulkCopyModal
-        isOpen={isBulkCopyModalOpen}
-        onClose={() => setIsBulkCopyModalOpen(false)}
-        vehicles={vehicles}
-        profiles={profiles}
       />
 
       <SummaryModal 

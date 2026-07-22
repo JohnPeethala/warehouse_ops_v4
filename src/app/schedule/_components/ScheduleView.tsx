@@ -31,7 +31,6 @@ function ScheduleContent() {
   
   const [isReportsOpen, setIsReportsOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isBulkCopyModalOpen, setIsBulkCopyModalOpen] = useState(false);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
   const [isNotDoneModalOpen, setIsNotDoneModalOpen] = useState(false);
@@ -50,8 +49,6 @@ function ScheduleContent() {
         setIsNotDoneModalOpen={setIsNotDoneModalOpen}
         setIsProgressModalOpen={setIsProgressModalOpen}
         setIsAddModalOpen={setIsAddModalOpen}
-        isBulkCopyModalOpen={isBulkCopyModalOpen}
-        setIsBulkCopyModalOpen={setIsBulkCopyModalOpen}
       />
 
       {/* Main Table Area */}
@@ -62,8 +59,6 @@ function ScheduleContent() {
       <ScheduleModalsManager 
         isAddModalOpen={isAddModalOpen}
         setIsAddModalOpen={setIsAddModalOpen}
-        isBulkCopyModalOpen={isBulkCopyModalOpen}
-        setIsBulkCopyModalOpen={setIsBulkCopyModalOpen}
         isSummaryModalOpen={isSummaryModalOpen}
         setIsSummaryModalOpen={setIsSummaryModalOpen}
         isProgressModalOpen={isProgressModalOpen}

@@ -20,7 +20,7 @@ export function RouteGroupHeader({
   vehicleDriverOptions: any[];
   gtProfiles: any[];
 }) {
-  const { selectedIds, setSelectedIds, onUpdateRouteSession } = useScheduleContext();
+  const { selectedIds, setSelectedIds, handleRouteSessionUpdate } = useScheduleContext();
   
   const isUnassigned = !group.route;
   const routeSession = group.tickets[0]?.ops_route_sessions || {};
@@ -72,7 +72,7 @@ export function RouteGroupHeader({
                   <EntityDropdown
                     value={routeSession.vehicle_id}
                     onChange={(val) => {
-                      onUpdateRouteSession(group.route, tripDate, { vehicle_id: val || null });
+                      handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: val || null });
                     }}
                     options={vehicleDriverOptions.filter((o: any) => !assignedVehicleIds.has(o.id) || o.id === routeSession.vehicle_id)}
                     placeholder="Select..."
@@ -87,7 +87,7 @@ export function RouteGroupHeader({
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">GT1:</span>
                   <EntityDropdown
                     value={routeSession.gt1_id}
-                    onChange={(val) => onUpdateRouteSession(group.route, tripDate, { gt1_id: val || null })}
+                    onChange={(val) => handleRouteSessionUpdate(group.route, tripDate, { gt1_id: val || null })}
                     options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt1_id)}
                     placeholder="Select..."
                     onCreateNew={(search) => {
@@ -99,7 +99,7 @@ export function RouteGroupHeader({
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">GT2:</span>
                   <EntityDropdown
                     value={routeSession.gt2_id}
-                    onChange={(val) => onUpdateRouteSession(group.route, tripDate, { gt2_id: val || null })}
+                    onChange={(val) => handleRouteSessionUpdate(group.route, tripDate, { gt2_id: val || null })}
                     options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt2_id)}
                     placeholder="Select..."
                     onCreateNew={(search) => {

@@ -61,7 +61,7 @@ export function Sidebar() {
       }
     }
     loadUser()
-  }, [supabase])
+  }, []) // Removed supabase from deps to prevent infinite loops
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme")
@@ -94,12 +94,6 @@ export function Sidebar() {
   }
 
   const showExpanded = isHovered
-
-  // Only show advanced items for admins
-  const displayItems = [...navItems]
-  if (profile?.role === 'admin') {
-    displayItems.push({ name: "Settings", href: "/settings", icon: Settings })
-  }
 
   return (
     <aside
@@ -141,7 +135,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 py-4 overflow-y-auto space-y-1 px-2 custom-scrollbar">
-          {displayItems.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
@@ -206,6 +200,24 @@ export function Sidebar() {
           )}
 
           <ManifestUploader variant="sidebar" showExpanded={showExpanded} />
+
+          {profile?.role === 'admin' && (
+            <Link
+              href="/settings"
+              className="flex items-center w-full p-2 rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white transition-colors group"
+            >
+              <div className="flex items-center justify-center min-w-[32px] group-hover:scale-110 transition-transform">
+                <Settings className="w-5 h-5" />
+              </div>
+              <AnimatePresence>
+                {showExpanded && (
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="ml-3 text-sm font-medium whitespace-nowrap">
+                    Settings
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+          )}
 
           <button
             onClick={toggleTheme}

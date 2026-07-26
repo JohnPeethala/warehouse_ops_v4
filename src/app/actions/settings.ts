@@ -45,7 +45,7 @@ export async function deleteProfile(id: string) {
   
   const { error } = await supabase
     .from('core_profiles')
-    .delete()
+    .update({ is_active: false })
     .eq('id', id);
 
   if (error) {
@@ -99,7 +99,7 @@ export async function deleteVehicle(id: string) {
   
   const { error } = await supabase
     .from('core_vehicles')
-    .delete()
+    .update({ is_active: false })
     .eq('id', id);
 
   if (error) {
@@ -162,7 +162,7 @@ export async function deleteLookup(id: string) {
   
   const { error } = await supabase
     .from('cfg_lookups')
-    .delete()
+    .update({ is_active: false })
     .eq('id', id);
 
   if (error) {

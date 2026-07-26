@@ -160,7 +160,6 @@ export function LookupStatusTable({
                     onEdit={() => onEdit(entry)}
                     onSave={() => onSaveEdit(entry.id)}
                     onCancel={onCancelEdit}
-                    onDelete={() => onDelete(entry.id)}
                   />
                 </td>
               </tr>

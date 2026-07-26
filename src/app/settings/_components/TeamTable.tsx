@@ -105,14 +105,7 @@ export function TeamTable({
                       </button>
                     )}
                     
-                    <button 
-                      onClick={() => onDelete(user.id)}
-                      disabled={isSaving}
-                      className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"
-                      title="Delete User"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+
                   </div>
                 </td>
               </tr>

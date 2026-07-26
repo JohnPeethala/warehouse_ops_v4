@@ -112,7 +112,6 @@ export function VehiclesTable({
                     onEdit={() => onEdit(v)}
                     onSave={() => onSaveEdit(v.id)}
                     onCancel={onCancelEdit}
-                    onDelete={() => onDelete(v.id)}
                   />
                 </td>
               </tr>

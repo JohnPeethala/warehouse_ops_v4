@@ -46,9 +46,9 @@ export async function login(prevState: any, formData: FormData) {
       password,
     });
     error = authResult.error;
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Auth Exception:", err);
-    return { error: 'An unexpected server error occurred during login.' }
+    return { error: err instanceof Error ? err.message : String(err) }
   }
 
   if (error) {

@@ -305,7 +305,6 @@ export async function addTicketsToSchedule(ticketsData: any[]) {
         date: todayStr,
         contact_name: t.contact_name,
         address1: t.address1,
-        pincode: t.pincode,
         sub_category: t.sub_category,
         category: "Dispatch" // default category
       }).select().single();
@@ -314,11 +313,10 @@ export async function addTicketsToSchedule(ticketsData: any[]) {
         t.id = newStagedTicket.id; // Assign the newly generated UUID
       }
     } else {
-      // If there are overrides like contact_name, address1, pincode, update ops_staged_tickets
+      // If there are overrides like contact_name, address1, update ops_staged_tickets
       const ticketUpdates: any = {};
       if (t.contact_name !== undefined) ticketUpdates.contact_name = t.contact_name;
       if (t.address1 !== undefined) ticketUpdates.address1 = t.address1;
-      if (t.pincode !== undefined) ticketUpdates.pincode = t.pincode;
       if (t.sub_category !== undefined) ticketUpdates.sub_category = t.sub_category;
       
       if (Object.keys(ticketUpdates).length > 0) {

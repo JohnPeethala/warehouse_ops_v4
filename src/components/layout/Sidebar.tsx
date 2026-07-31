@@ -17,7 +17,8 @@ import {
   CalendarDays,
   Target,
   Warehouse,
-  ClipboardList
+  ClipboardList,
+  Users
 } from "lucide-react"
 import classNames from "classnames"
 import { createClient } from "@/lib/supabase/client"
@@ -30,6 +31,7 @@ const navItems = [
   { name: 'Route Planner', icon: Route, href: '/planner' },
   { name: 'Live Tracker', icon: Radar, href: '/live' },
   { name: 'Custom Batch', icon: ClipboardList, href: '/custom-batch' },
+  { name: 'Roster', icon: Users, href: '/roster' },
 ]
 
 export function Sidebar() {
@@ -37,31 +39,49 @@ export function Sidebar() {
   const [isHovered, setIsHovered] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [profile, setProfile] = useState<{name: string, role: string} | null>(null)
-  const supabase = createClient()
-
+  const [supabase] = useState(() => createClient())
 
   useEffect(() => {
+    let mounted = true;
     async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from('core_profiles').select('name, role').eq('id', user.id).single()
-        
-        const emailPrefix = user.email?.split('@')[0] || ''
-        const isPhone = /^\+?[\d\s\-]+$/.test(emailPrefix)
-        const fallbackName = user.user_metadata?.name || (isPhone ? 'User' : emailPrefix) || 'User'
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user && mounted) {
+          const { data } = await supabase.from('core_profiles').select('name, role').eq('id', user.id).single()
+          
+          const emailPrefix = user.email?.split('@')[0] || ''
+          const isPhone = /^\+?[\d\s\-]+$/.test(emailPrefix)
+          const fallbackName = user.user_metadata?.name || (isPhone ? 'User' : emailPrefix) || 'User'
 
-        if (data) {
-          setProfile({
-            name: data.name || fallbackName,
-            role: data.role || 'admin'
-          })
-        } else {
-          setProfile({ name: fallbackName, role: 'admin' })
+          if (data) {
+            setProfile({
+              name: data.name || fallbackName,
+              role: data.role || 'admin'
+            })
+          } else {
+            setProfile({ name: fallbackName, role: 'admin' })
+          }
         }
+      } catch (err) {
+        console.error("Failed to load user:", err)
       }
     }
+    
     loadUser()
-  }, []) // Removed supabase from deps to prevent infinite loops
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user && mounted) {
+        loadUser()
+      } else if (!session?.user && mounted) {
+        setProfile(null)
+      }
+    })
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme")

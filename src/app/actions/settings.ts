@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 // -----------------------------
@@ -8,15 +9,31 @@ import { revalidatePath } from "next/cache";
 // -----------------------------
 
 export async function addProfile(name: string, phone: string, role: string, is_active: boolean = true) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
-  const { error } = await supabase
-    .from('core_profiles')
-    .insert([{ name, phone, role, is_active }]);
+  const dummyEmail = `${phone.replace(/[^0-9]/g, '')}@warehouse.com`;
+  const password = "123456";
 
-  if (error) {
-    console.error("Error adding profile:", error);
-    return { success: false, error: error.message };
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email: dummyEmail,
+    password: password,
+    email_confirm: true,
+    user_metadata: {
+      name,
+      phone,
+      role
+    }
+  });
+
+  if (authError) {
+    console.error("Error adding profile (auth user):", authError);
+    return { success: false, error: authError.message };
+  }
+
+  if (!is_active) {
+    // If they unchecked active, update the profile since the trigger sets it to true by default
+    const client = await createClient();
+    await client.from('core_profiles').update({ is_active: false }).eq('id', authData.user.id);
   }
 
   revalidatePath('/settings');

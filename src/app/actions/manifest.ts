@@ -170,7 +170,6 @@ export async function processAndUploadManifest(formData: FormData) {
         contact_name: toTitleCase(String(row["Contact name"] || "")),
         phone: formatPhone(String(row["Phone (Contact)"] || "")),
         address1: combinedAddress,
-        pincode: String(row["Pincode"] || ""),
         category: category,
         sub_category: subCategory,
         ticket_age: parseTicketAge(String(row["Ticket Age"] || "")),

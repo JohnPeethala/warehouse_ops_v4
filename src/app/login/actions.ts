@@ -39,12 +39,13 @@ export async function login(prevState: any, formData: FormData) {
   const email = `${phone}@warehouse.com`
 
   let error;
+  let authResult;
   try {
-    const result = await supabase.auth.signInWithPassword({
+    authResult = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    error = result.error;
+    error = authResult.error;
   } catch (err) {
     console.error("Auth Exception:", err);
     return { error: 'An unexpected server error occurred during login.' }
@@ -52,6 +53,21 @@ export async function login(prevState: any, formData: FormData) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (authResult?.data?.user) {
+    const { data: profile } = await supabase.from('core_profiles').select('role, is_active').eq('id', authResult.data.user.id).single();
+    
+    if (profile && profile.is_active === false) {
+      await supabase.auth.signOut();
+      return { error: 'Your account has been deactivated. Please contact an admin.' };
+    }
+
+    const role = profile?.role;
+    if (!['admin', 'supervisor', 'viewer'].includes(role)) {
+      await supabase.auth.signOut();
+      return { error: 'Your role does not have permission to access the web portal.' };
+    }
   }
 
   revalidatePath('/', 'layout')

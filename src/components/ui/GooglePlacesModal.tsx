@@ -174,15 +174,14 @@ function GooglePlacesModalInner({ isOpen, onClose, onSelect, initialQuery }: Pro
 
              <div className="absolute inset-0 z-0">
                <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-                  <Map
-                    defaultCenter={currentCenter}
-                    defaultZoom={currentZoom}
-                    gestureHandling={'greedy'}
-                    disableDefaultUI={true}
-                    zoomControl={true}
-                    mapId="places-modal-map"
-                    styles={isDarkMode ? DARK_STYLES : LIGHT_STYLES}
-                  >
+                    <Map
+                      defaultCenter={currentCenter}
+                      defaultZoom={currentZoom}
+                      gestureHandling={'greedy'}
+                      disableDefaultUI={true}
+                      zoomControl={true}
+                      mapId="places-modal-map"
+                    >
                     <MapBoundsUpdater results={searchResults} selectedLocation={selectedLocation} />
 
                     {!selectedLocation && searchResults.map((res) => (

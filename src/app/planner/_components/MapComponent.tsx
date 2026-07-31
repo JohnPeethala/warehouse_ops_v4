@@ -41,7 +41,7 @@ export function MapComponent() {
           defaultZoom={12}
           gestureHandling={'greedy'}
           disableDefaultUI={true} 
-          styles={isDarkMode ? DARK_STYLES : LIGHT_STYLES}
+          mapId="planner-map"
           padding={{ right: 400 }}
         >
           <MapEngine />

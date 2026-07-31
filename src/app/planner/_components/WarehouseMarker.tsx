@@ -1,22 +1,35 @@
 "use client";
 
-import { AdvancedMarker } from '@vis.gl/react-google-maps';
+import { Marker } from '@vis.gl/react-google-maps';
 import { WAREHOUSE_COORDS } from './mapConfig';
 
 export function WarehouseMarker() {
+  const warehouseSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">
+      <!-- Circle background -->
+      <circle cx="60" cy="30" r="20" fill="white" stroke="#2563eb" stroke-width="4"/>
+      <!-- Icon -->
+      <g transform="translate(48, 18)" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </g>
+      <!-- Label Background -->
+      <rect x="20" y="55" width="80" height="20" rx="4" fill="#2563eb"/>
+      <!-- Text -->
+      <text x="60" y="69" font-family="sans-serif" font-size="9" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="1">WAREHOUSE</text>
+    </svg>
+  `;
+
+  const url = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(warehouseSvg)}`;
+
   return (
-    <AdvancedMarker position={WAREHOUSE_COORDS} zIndex={50}>
-      <div className="relative group cursor-pointer">
-        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-blue-600 relative z-10 transition-transform group-hover:scale-110">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </div>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-          Warehouse HQ
-        </div>
-      </div>
-    </AdvancedMarker>
+    <Marker 
+      position={WAREHOUSE_COORDS} 
+      zIndex={50}
+      icon={{
+        url,
+        anchor: typeof google !== 'undefined' ? new google.maps.Point(60, 40) : undefined,
+      }}
+    />
   );
 }

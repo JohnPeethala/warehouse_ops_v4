@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { X, Search, MapPin, Loader2, Navigation, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { APIProvider, Map, AdvancedMarker, Pin, useMap, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 import { HYDERABAD_COORDS, DARK_STYLES, LIGHT_STYLES } from "@/app/planner/_components/mapConfig";
 
 type Props = {
@@ -180,18 +180,16 @@ function GooglePlacesModalInner({ isOpen, onClose, onSelect, initialQuery }: Pro
                       gestureHandling={'greedy'}
                       disableDefaultUI={true}
                       zoomControl={true}
-                      mapId="places-modal-map"
+                      styles={isDarkMode ? DARK_STYLES : LIGHT_STYLES}
                     >
                     <MapBoundsUpdater results={searchResults} selectedLocation={selectedLocation} />
 
                     {!selectedLocation && searchResults.map((res) => (
-                      <AdvancedMarker 
+                      <Marker 
                         key={res.place_id}
                         position={{ lat: res.geometry.location.lat, lng: res.geometry.location.lng }}
                         onClick={() => handleMarkerClick(res)}
-                      >
-                         <Pin background={"#000000"} borderColor={"#ffffff"} glyphColor={"#ffffff"} scale={1.0} />
-                      </AdvancedMarker>
+                      />
                     ))}
 
                   {selectedLocation && (
@@ -419,24 +417,17 @@ function PlacesSearch({
 }
 
 function DraggableMarker({ position, onDragEnd }: { position: { lat: number; lng: number }; onDragEnd: (lat: number, lng: number) => void }) {
-  const [markerRef, marker] = useAdvancedMarkerRef();
-
-  const handleDragEnd = () => {
-    if (marker && marker.position) {
-      const lat = typeof marker.position.lat === 'function' ? marker.position.lat() : marker.position.lat as number;
-      const lng = typeof marker.position.lng === 'function' ? marker.position.lng() : marker.position.lng as number;
-      onDragEnd(lat, lng);
+  const handleDragEnd = (e: any) => {
+    if (e.latLng) {
+      onDragEnd(e.latLng.lat(), e.latLng.lng());
     }
   };
 
   return (
-    <AdvancedMarker 
-      ref={markerRef}
+    <Marker 
       position={position} 
       draggable={true}
       onDragEnd={handleDragEnd}
-    >
-      <Pin background={"#ef4444"} borderColor={"#ffffff"} glyphColor={"#ffffff"} scale={1.3} />
-    </AdvancedMarker>
+    />
   );
 }

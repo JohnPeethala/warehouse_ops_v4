@@ -163,7 +163,7 @@ export function LiveTrackerClient({ initialTickets, lookups, categories, targetD
     const map = new Map<string, Ticket[]>();
 
     tickets.forEach(t => {
-      console.log('Ticket ops_route_sessions:', t.ops_route_sessions);
+
       const gt1 = t.ops_route_sessions?.driver_profile?.name || '';
       const gt2 = t.ops_route_sessions?.gt2_profile?.name || '';
       const gtName = gt2 ? `${gt1} & ${gt2}` : (gt1 || 'Unassigned');

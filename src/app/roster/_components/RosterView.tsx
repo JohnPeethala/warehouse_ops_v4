@@ -21,7 +21,7 @@ export function RosterView() {
     const start = format(subDays(currentDate, 6), "yyyy-MM-dd");
     
     const { master, roster } = await getRosterData(start, end);
-    console.log("Loaded Roster Data:", { master, roster });
+
     setMasterList(master);
     setRosterData(roster);
     setIsLoading(false);

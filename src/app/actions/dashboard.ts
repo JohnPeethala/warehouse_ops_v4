@@ -43,7 +43,7 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
     // 1b. Total Tickets Data (for Sub-category split and table)
     const { data: stagedTickets, error: stagedDataErr } = await supabase
       .from("ops_staged_tickets")
-      .select("ticket_id, date, category, sub_category, contact_name, address1, pincode, ticket_age");
+      .select("ticket_id, date, category, sub_category, contact_name, address1, ticket_age");
 
     if (stagedDataErr) throw stagedDataErr;
 
@@ -122,7 +122,6 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
             target[cat]++;
           } else {
             target[cat] = 1;
-            if (!cats.includes(cat)) cats.push(cat);
           }
           target.total++;
         }

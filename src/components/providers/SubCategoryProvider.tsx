@@ -19,7 +19,7 @@ export const SubCategoryProvider = ({ children }: { children: React.ReactNode })
     const fetchCategories = async () => {
       const supabase = createClient();
       const { data, error } = await supabase.from("cfg_ticket_categories").select("*");
-      console.log("SubCategoryProvider fetch:", data, error);
+
       if (!error && data) {
         setCategories(data as SubCategoryConfig[]);
       }

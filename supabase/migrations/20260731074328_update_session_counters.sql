@@ -4,17 +4,17 @@ DECLARE
   resolved_status TEXT;
 BEGIN
   -- Only run if the sub-status has changed (or on insert)
-  IF (TG_OP = 'INSERT' OR NEW.gt_sub_status IS DISTINCT FROM OLD.gt_sub_status) THEN
+  IF (TG_OP = 'INSERT' OR NEW.sub_status IS DISTINCT FROM OLD.sub_status) THEN
     
     -- Find the parent status from the lookup table
     SELECT status INTO resolved_status
     FROM cfg_lookups
-    WHERE domain = 'TICKET' AND sub_status = NEW.gt_sub_status
+    WHERE domain = 'TICKET' AND sub_status = NEW.sub_status
     LIMIT 1;
 
     -- If found, apply it to the row before it saves
     IF resolved_status IS NOT NULL THEN
-      NEW.gt_status := resolved_status;
+      NEW.status := resolved_status;
     END IF;
   END IF;
 
@@ -34,9 +34,9 @@ BEGIN
   UPDATE ops_route_sessions
   SET 
     total = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id),
-    done = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id AND gt_status IN ('Done', 'Completed', 'Delivered')),
-    not_done = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id AND gt_status IN ('Failed', 'Cancelled', 'Not Done', 'Rejected')),
-    pending = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id AND (gt_status IS NULL OR gt_status IN ('Pending', 'In Progress', 'Assigned')))
+    done = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id AND status IN ('Done', 'Completed', 'Delivered')),
+    not_done = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id AND status IN ('Failed', 'Cancelled', 'Not Done', 'Rejected')),
+    pending = (SELECT COUNT(*) FROM ops_dispatch_log WHERE gt_trip_id = session_id AND (status IS NULL OR status IN ('Pending', 'In Progress', 'Assigned')))
   WHERE id = session_id;
 END;
 $$ LANGUAGE plpgsql;

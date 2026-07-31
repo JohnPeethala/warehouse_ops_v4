@@ -92,7 +92,7 @@ function GooglePlacesModalInner({ isOpen, onClose, onSelect, initialQuery }: Pro
       let pincode = "";
       if (reverseData.results && reverseData.results.length > 0) {
         for (const r of reverseData.results) {
-           r.address_components.forEach((component: any) => {
+           r.address_components.forEach((component: { types: string[]; long_name: string }) => {
             const types = component.types;
             if (types.includes("postal_code") && !pincode) {
               pincode = component.long_name;
@@ -241,7 +241,7 @@ function GooglePlacesModalInner({ isOpen, onClose, onSelect, initialQuery }: Pro
 }
 
 // Helper component to update bounds when results change
-function MapBoundsUpdater({ results, selectedLocation }: { results: SearchResult[], selectedLocation: any }) {
+function MapBoundsUpdater({ results, selectedLocation }: { results: SearchResult[], selectedLocation: { lat: number; lng: number } | null }) {
   const map = useMap();
 
   useEffect(() => {

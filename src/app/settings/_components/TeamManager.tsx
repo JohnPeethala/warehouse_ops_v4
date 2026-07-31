@@ -31,7 +31,7 @@ export function TeamManager({ initialData }: { initialData: Profile[] }) {
     const res = await updateProfile(userId, { role: newRole });
     
     if (res.success) {
-      setEntries(entries.map(e => e.id === userId ? { ...e, role: newRole as any } : e));
+      setEntries(entries.map(e => e.id === userId ? { ...e, role: newRole as Profile['role'] } : e));
     } else {
       alert("Failed to update user role: " + res.error);
     }

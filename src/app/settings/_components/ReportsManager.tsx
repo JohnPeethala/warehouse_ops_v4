@@ -9,10 +9,12 @@ import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import * as XLSX from "xlsx";
 
+import { Database } from "@/lib/supabase/database.types";
+
 type Props = {
   initialData: {
-    profiles: any[];
-    vehicles: any[];
+    profiles: Database['public']['Tables']['core_profiles']['Row'][];
+    vehicles: Database['public']['Tables']['core_vehicles']['Row'][];
   };
 };
 
@@ -37,7 +39,7 @@ export function ReportsManager({ initialData }: Props) {
     }
 
     setLoading(true);
-    let finalRows: any[][] = [];
+    let finalRows: (string | number | boolean | null)[][] = [];
     let headers: string[] = [];
 
     try {
@@ -58,7 +60,7 @@ export function ReportsManager({ initialData }: Props) {
           "Notes", "Remarks", "Address", "Trip ID (UUID)"
         ];
 
-        finalRows = tickets.map((t: any) => {
+        finalRows = tickets.map((t: Record<string, unknown>) => {
           let driverName = "";
           let vehicleNo = "";
           let gt1Name = "";
@@ -107,7 +109,7 @@ export function ReportsManager({ initialData }: Props) {
           "Done Tickets", "Not Done Tickets", "Pending Tickets", "Trip ID (UUID)"
         ];
 
-        finalRows = sessions.map((s: any) => {
+        finalRows = sessions.map((s: Record<string, unknown>) => {
           let driverName = "";
           let vehicleNo = "";
           let gt1Name = "";
@@ -136,8 +138,8 @@ export function ReportsManager({ initialData }: Props) {
 
       setLoading(false);
       return { headers, rows: finalRows, type: reportType };
-    } catch (e: any) {
-      toast.error(e.message || "Failed to fetch data");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to fetch data");
       setLoading(false);
       return null;
     }

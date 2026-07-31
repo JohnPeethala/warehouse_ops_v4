@@ -19,7 +19,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   // Assuming 'role' is part of some session state or we check it manually:
   // For now, we will simply load the data directly. Real role-based access control should be implemented via auth layer.
 
-  let data: any = null;
+  let data: unknown = null;
   
   if (activeTab === "team") {
     const { data: teamData } = await supabase.from("core_profiles").select("*").order("created_at", { ascending: false });
@@ -42,11 +42,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <SettingsLayout>
       <div className="w-full">
-        {activeTab === "team" && <TeamManager initialData={data || []} />}
-        {activeTab === "vehicles" && <VehiclesManager initialData={data || []} />}
-        {activeTab === "lookups" && <LookupStatusManager initialData={data || []} />}
-        {activeTab === "locations" && <GeoLocationsManager initialData={data || []} />}
-        {activeTab === "reports" && <ReportsManager initialData={data || { profiles: [], vehicles: [] }} />}
+        {activeTab === "team" && <TeamManager initialData={data as React.ComponentProps<typeof TeamManager>["initialData"]} />}
+        {activeTab === "vehicles" && <VehiclesManager initialData={data as React.ComponentProps<typeof VehiclesManager>["initialData"]} />}
+        {activeTab === "lookups" && <LookupStatusManager initialData={data as React.ComponentProps<typeof LookupStatusManager>["initialData"]} />}
+        {activeTab === "locations" && <GeoLocationsManager initialData={data as React.ComponentProps<typeof GeoLocationsManager>["initialData"]} />}
+        {activeTab === "reports" && <ReportsManager initialData={data as React.ComponentProps<typeof ReportsManager>["initialData"]} />}
       </div>
     </SettingsLayout>
   )

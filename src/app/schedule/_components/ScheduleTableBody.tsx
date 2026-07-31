@@ -5,6 +5,12 @@ import { Tag } from "lucide-react";
 import { RouteGroupHeader } from "./RouteGroupHeader";
 import { TicketRow } from "./TicketRow";
 
+import { Database } from "@/lib/supabase/database.types";
+import { ScheduleLog } from "../_hooks/useScheduleLogic";
+
+type PendingVehicle = { route: string; date: string };
+type PendingGt = { route: string; date: string; type: 'gt1'|'gt2' };
+
 export function ScheduleTableBody({
   groupedData,
   searchQuery,
@@ -18,17 +24,17 @@ export function ScheduleTableBody({
   onOpenVehicleModal,
   onOpenGtModal
 }: {
-  groupedData: any[];
+  groupedData: { route: string; tickets: ScheduleLog[] }[];
   searchQuery: string;
   openFiltersCount: number;
-  statusOptions: any[];
+  statusOptions: Database['public']['Tables']['cfg_lookups']['Row'][];
   nameCounts: Record<string, number>;
   assignedVehicleIds: Set<string>;
   assignedGtIds: Set<string>;
-  vehicleDriverOptions: any[];
-  gtProfiles: any[];
-  onOpenVehicleModal: (search: string, pending: any) => void;
-  onOpenGtModal: (search: string, pending: any) => void;
+  vehicleDriverOptions: Database['public']['Tables']['core_vehicles']['Row'][];
+  gtProfiles: Database['public']['Tables']['core_profiles']['Row'][];
+  onOpenVehicleModal: (search: string, pending: PendingVehicle) => void;
+  onOpenGtModal: (search: string, pending: PendingGt) => void;
 }) {
   return (
     <tbody className={`divide-y divide-border/50 transition-all duration-300 ${openFiltersCount > 0 ? 'blur-[1px] opacity-80' : ''}`}>
@@ -57,7 +63,7 @@ export function ScheduleTableBody({
                 gtProfiles={gtProfiles}
               />
               
-              {group.tickets.map((ticket: any) => {
+              {group.tickets.map((ticket: ScheduleLog) => {
                 const nameCount = nameCounts[ticket.contact_name?.trim() || "Unknown"] || 1;
                 return (
                   <TicketRow 

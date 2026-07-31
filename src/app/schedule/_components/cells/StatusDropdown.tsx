@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Database } from "@/lib/supabase/database.types";
 
 export const StatusDropdown = ({
   statusValue,
@@ -13,7 +14,7 @@ export const StatusDropdown = ({
   statusValue: string;
   subStatusValue: string;
   onChange: (updates: { status: string; sub_status: string }) => void;
-  options: any[];
+  options: Database['public']['Tables']['cfg_lookups']['Row'][];
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -32,7 +33,7 @@ export const StatusDropdown = ({
     }
   };
 
-  const lookup = options.find((l: any) => 
+  const lookup = options.find((l) => 
     l.status.toLowerCase() === effectiveStatus.toLowerCase() && 
     (!l.sub_status || l.sub_status.toLowerCase() === effectiveSubStatus.toLowerCase())
   );

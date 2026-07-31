@@ -65,8 +65,8 @@ export async function createGTAction(name: string, phone: string) {
     
     // Return a basic profile object so the UI can update immediately
     return { success: true, data: { id: authData.user.id, name: gtName, role: 'ground', phone: phone } }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Server Action Exception:", err);
-    return { success: false, error: err?.message || String(err) }
+    return { success: false, error: err instanceof Error ? err.message : String(err) }
   }
 }

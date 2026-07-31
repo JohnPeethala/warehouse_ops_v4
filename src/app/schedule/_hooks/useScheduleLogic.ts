@@ -8,7 +8,9 @@ import {
   updateDispatchLogFields
 } from "@/app/actions/schedule";
 
-export type ScheduleLog = any; // You can strongly type this later
+import { Database } from "@/lib/supabase/database.types";
+
+export type ScheduleLog = Database['public']['Tables']['ops_dispatch_log']['Row'] & { ops_route_sessions?: any };
 
 export function useScheduleLogic(initialLogs: ScheduleLog[]) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -111,7 +113,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     // Optimistic update
     setOptimisticLogs(prev => {
       const next = { ...prev };
-      const updates: any = { [field]: value };
+      const updates: Record<string, string> = { [field]: value };
       if (field === 'route') {
         updates.gt_trip_id = null;
         updates.ops_route_sessions = null;
@@ -137,7 +139,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     
     // Optimistic update
     setOptimisticLogs(prev => {
-      const updates: any = { [field]: value };
+      const updates: Record<string, string> = { [field]: value };
       if (field === 'route') {
         updates.gt_trip_id = null;
         updates.ops_route_sessions = null;
@@ -156,7 +158,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
   }, [selectedIds, handleBulkUpdate]);
 
   // Handle multiple fields update (e.g. status and sub_status)
-  const handleFieldsUpdate = useCallback((id: string, updates: Record<string, any>) => {
+  const handleFieldsUpdate = useCallback((id: string, updates: Record<string, string | null>) => {
     setOptimisticLogs(prev => ({
       ...prev,
       [id]: { ...(prev[id] || {}), ...updates }
@@ -221,7 +223,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     }
   }, []);
 
-  const handleAddLogs = useCallback((newLogs: any[]) => {
+  const handleAddLogs = useCallback((newLogs: ScheduleLog[]) => {
     setAddedLogs(prev => [...prev, ...newLogs]);
   }, []);
 

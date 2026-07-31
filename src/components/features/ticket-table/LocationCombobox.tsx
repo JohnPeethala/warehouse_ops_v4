@@ -19,16 +19,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-
-type GeoZone = {
-  id: string;
-  area: string | null;
-  pincode: string | null;
-  lat: number | null;
-  lng: number | null;
-  zone: string | null;
-  city: string | null;
-};
+import type { GeoZone } from "./types";
 
 type Props = {
   ticketId: string;

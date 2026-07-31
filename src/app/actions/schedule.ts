@@ -68,9 +68,13 @@ export async function updateDispatchLogFields(id: string, updates: Record<string
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Unauthorized" };
 
+  const payload = { ...updates, updated_by: user.id };
+  // The database trigger will automatically resolve the parent status from sub_status
+  delete payload.status;
+
   const { error } = await supabase
     .from("ops_dispatch_log")
-    .update({ ...updates, updated_by: user.id })
+    .update(payload)
     .eq("id", id);
 
   if (error) {
@@ -229,6 +233,8 @@ export async function bulkUpdateDispatchLogFields(ids: string[], updates: Record
   }
 
   const payload = { ...updates, updated_by: user.id };
+  // The database trigger will automatically resolve the parent status from sub_status
+  delete payload.status;
 
   const { error } = await supabase
     .from("ops_dispatch_log")

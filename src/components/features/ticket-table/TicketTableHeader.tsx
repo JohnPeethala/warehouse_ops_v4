@@ -16,7 +16,7 @@ type TicketTableHeaderProps = {
   clearSelection: () => void;
   sortConfig: SortConfig;
   handleSort: (key: string) => void;
-  filterOptions: any;
+  filterOptions: Record<string, string[]>;
   colFilters: Record<string, Set<string> | null>;
   setColFilters: React.Dispatch<React.SetStateAction<Record<string, Set<string> | null>>>;
   handleFilterOpenChange: (open: boolean) => void;

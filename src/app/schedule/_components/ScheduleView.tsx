@@ -7,12 +7,14 @@ import { ScheduleHeader } from "./ScheduleHeader";
 import { ScheduleModalsManager } from "./ScheduleModalsManager";
 import { useSubCategorySettings } from "@/components/providers/SubCategoryProvider";
 
+import { Database } from "@/lib/supabase/database.types";
+
 type Props = {
-  logs: any[];
-  geoZones: any[];
-  profiles: any[];
-  vehicles: any[];
-  lookups: any[];
+  logs: Database['public']['Tables']['ops_dispatch_log']['Row'][];
+  geoZones: Database['public']['Tables']['cfg_geo_zones']['Row'][];
+  profiles: Database['public']['Tables']['core_profiles']['Row'][];
+  vehicles: Database['public']['Tables']['core_vehicles']['Row'][];
+  lookups: Database['public']['Tables']['cfg_lookups']['Row'][];
 };
 
 export function ScheduleView(props: Props) {

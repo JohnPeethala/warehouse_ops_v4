@@ -1,30 +1,16 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
-import { Copy, CalendarClock, Flag, Tag, X } from "lucide-react";
+import { Tag } from "lucide-react";
 import { toast } from "sonner";
 
-import { ExcelColumnFilter } from "./ExcelColumnFilter";
-import { CalendarColumnFilter } from "./CalendarColumnFilter";
-import { InteractiveTagInput, SortableHeader, AutoResizeTextarea } from "./TableCells";
-import { LocationCombobox } from "./LocationCombobox";
 import { getCategoryDetails } from "@/lib/categoryUtils";
 import { useSubCategorySettings } from "@/components/providers/SubCategoryProvider";
 import { updateAnnotation } from "@/app/actions/annotations";
-import { updateTicketLocation } from "@/app/actions/geo";
 import { TicketTableHeader } from "./TicketTableHeader";
 import { TicketTableRow } from "./TicketTableRow";
-const safeDateParse = (dateString: string) => {
-  if (!dateString || dateString === "-" || dateString.startsWith("1970-01-01")) return null;
-  const parts = dateString.split("T")[0].split("-");
-  if (parts.length === 3) {
-    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-  }
-  return new Date(dateString);
-};
 
-import type { EnrichedTicket, TicketAnnotation, SortConfig } from "./types";
+import type { EnrichedTicket, TicketAnnotation, SortConfig, GeoZone } from "./types";
 
 type TicketTableProps = {
   data: EnrichedTicket[];
@@ -33,13 +19,13 @@ type TicketTableProps = {
   setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   annotationsMap: Record<string, TicketAnnotation>;
   setAnnotationsMap: React.Dispatch<React.SetStateAction<Record<string, TicketAnnotation>>>;
-  geoZones: any[];
+  geoZones: GeoZone[];
   searchQuery: string;
   colFilters: Record<string, Set<string> | null>;
   setColFilters: React.Dispatch<React.SetStateAction<Record<string, Set<string> | null>>>;
   sortConfig: SortConfig;
   handleSort: (key: string) => void;
-  filterOptions: any;
+  filterOptions: Record<string, string[]>;
   nameCounts: Record<string, number>;
   toggleSelectAll: () => void;
   toggleSelect: (id: string) => void;
@@ -90,26 +76,6 @@ export function TicketTable({
       hash = tag.charCodeAt(i) + ((hash << 5) - hash);
     }
     return colors[Math.abs(hash) % colors.length];
-  };
-
-  const renderTags = (tagsStr: string | null) => {
-    if (!tagsStr || tagsStr.trim() == "-") return null;
-    const tags = tagsStr.split(",").map((t: string) => t.trim()).filter((t: string) => t && t !== "-");
-    if (tags.length === 0) return null;
-
-    return (
-      <div className="flex flex-wrap gap-1">
-        {tags.map((tag: string) => (
-          <span
-            key={tag}
-            className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold border truncate max-w-[90px] ${getTagColor(tag)}`}
-            title={tag}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-    );
   };
 
   return (

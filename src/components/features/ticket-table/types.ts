@@ -1,3 +1,7 @@
+import { Database } from '@/lib/supabase/database.types';
+
+export type GeoZone = Database['public']['Tables']['cfg_geo_zones']['Row'];
+
 export type StagedTicket = {
   id: string;
   ticket_id: string;

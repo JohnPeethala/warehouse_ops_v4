@@ -13,12 +13,8 @@ import {
   Moon,
   LogOut,
   Radar,
-  StickyNote,
   CalendarDays,
-  Target,
-  Warehouse,
-  ClipboardList,
-  Users
+  ClipboardList
 } from "lucide-react"
 import classNames from "classnames"
 import { createClient } from "@/lib/supabase/client"
@@ -31,7 +27,7 @@ const navItems = [
   { name: 'Route Planner', icon: Route, href: '/planner' },
   { name: 'Live Tracker', icon: Radar, href: '/live' },
   { name: 'Custom Batch', icon: ClipboardList, href: '/custom-batch' },
-  { name: 'Roster', icon: Users, href: '/roster' },
+
 ]
 
 export function Sidebar() {

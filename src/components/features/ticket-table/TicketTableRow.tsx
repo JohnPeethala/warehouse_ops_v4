@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { cva } from "class-variance-authority";
 import { InteractiveTagInput, AutoResizeTextarea } from "./TableCells";
 import { LocationCombobox } from "./LocationCombobox";
-import type { EnrichedTicket, TicketAnnotation } from "./types";
+import { LucideIcon } from "lucide-react";
+import type { EnrichedTicket, TicketAnnotation, GeoZone } from "./types";
 
 const safeDateParse = (dateString: string) => {
   if (!dateString || dateString === "-" || dateString.startsWith("1970-01-01")) return null;
@@ -85,9 +86,9 @@ type TicketTableRowProps = {
   showCheckboxes: boolean;
   showScheduleStatus: boolean;
   toggleSelect: (id: string) => void;
-  Icon: any;
+  Icon: LucideIcon;
   color: string;
-  geoZones: any[];
+  geoZones: GeoZone[];
   nameCount: number;
   isNameFiltered: boolean;
   onNameFilterToggle: (name: string) => void;

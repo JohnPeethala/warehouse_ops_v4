@@ -1,8 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import type { EnrichedTicket } from "../_components/types";
 import { useRealtimeAnnotations } from "./useRealtimeAnnotations";
 import { useRealtimeGeoZones } from "./useRealtimeGeoZones";
-import { useTicketSelection } from "./useTicketSelection";
 import { useTicketFilters } from "./useTicketFilters";
 import { useTicketAnalytics } from "./useTicketAnalytics";
 
@@ -10,8 +9,7 @@ export function useTableLogic(data: EnrichedTicket[]) {
   const { annotationsMap, setAnnotationsMap } = useRealtimeAnnotations();
   const { geoZones } = useRealtimeGeoZones();
   
-  const dataIds = data.map(t => t.id);
-  const { selectedIds, setSelectedIds, toggleSelectAll, toggleSelect } = useTicketSelection(dataIds);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const {
     searchQuery,
@@ -35,6 +33,30 @@ export function useTableLogic(data: EnrichedTicket[]) {
     scheduleStats,
     nameCounts,
   } = useTicketAnalytics(data, filteredData, annotationsMap);
+
+  const toggleSelectAll = () => {
+    const filteredIds = filteredData.map(t => t.id);
+    const allSelected = filteredIds.every(id => selectedIds.has(id));
+    
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allSelected && filteredIds.length > 0) {
+        filteredIds.forEach(id => next.delete(id));
+      } else {
+        filteredIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 

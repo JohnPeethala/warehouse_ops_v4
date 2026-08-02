@@ -125,13 +125,13 @@ export function Sidebar() {
       <div className="flex flex-col h-full relative">
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 dark:border-zinc-200 h-16 shrink-0">
           <div className="flex items-center justify-center min-w-[32px]">
-            {/* Monochrome Logo */}
+            {/* Custom SVG Logo */}
             <motion.div 
-              whileHover={{ rotate: 180 }}
-              transition={{ duration: 0.5, ease: "anticipate" }}
-              className="w-8 h-8 rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 flex items-center justify-center font-bold text-lg"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+              className="w-8 h-8 flex items-center justify-center"
             >
-              W
+              <img src="/logo.svg" alt="Warehouse Ops Logo" className="w-full h-full object-contain" />
             </motion.div>
           </div>
           <AnimatePresence>

@@ -85,7 +85,7 @@ export function TicketTable({
           <TicketTableHeader
             showCheckboxes={showCheckboxes}
             showScheduleStatus={showScheduleStatus}
-            selectedIdsSize={selectedIds.size}
+            selectedFilteredCount={filteredData.filter(t => selectedIds.has(t.id)).length}
             filteredDataLength={filteredData.length}
             toggleSelectAll={toggleSelectAll}
             clearSelection={() => setSelectedIds(new Set())}

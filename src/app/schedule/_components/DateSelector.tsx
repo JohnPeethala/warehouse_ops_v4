@@ -28,9 +28,9 @@ export function DateSelector() {
     router.push(`?${params.toString()}`);
   }, [router, searchParams]);
 
-  const handleYesterday = () => updateDate(format(subDays(safeDateParse(selectedDateStr), 1), "yyyy-MM-dd"));
+  const handleYesterday = () => updateDate(format(subDays(new Date(), 1), "yyyy-MM-dd"));
   const handleToday = () => updateDate(format(new Date(), "yyyy-MM-dd"));
-  const handleTomorrow = () => updateDate(format(addDays(safeDateParse(selectedDateStr), 1), "yyyy-MM-dd"));
+  const handleTomorrow = () => updateDate(format(addDays(new Date(), 1), "yyyy-MM-dd"));
 
   const [open, setOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(safeDateParse(selectedDateStr));
@@ -89,19 +89,27 @@ export function DateSelector() {
 
   const displayDate = format(safeDateParse(selectedDateStr), "MMM d, yyyy");
 
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const yesterdayStr = format(subDays(new Date(), 1), "yyyy-MM-dd");
+  const tomorrowStr = format(addDays(new Date(), 1), "yyyy-MM-dd");
+
   return (
     <div className="flex items-center gap-2 bg-card border border-border shadow-sm rounded-lg p-1">
       <div className="flex items-center">
         <button 
           onClick={handleYesterday}
-          className="px-3 py-1.5 text-xs font-medium hover:bg-muted text-muted-foreground rounded-md transition-colors"
+          className={`px-3 py-1.5 text-xs font-medium transition-colors rounded-md ${
+            selectedDateStr === yesterdayStr
+              ? "bg-primary text-primary-foreground shadow-sm" 
+              : "hover:bg-muted text-muted-foreground"
+          }`}
         >
           Yesterday
         </button>
         <button 
           onClick={handleToday}
           className={`px-3 py-1.5 text-xs font-medium transition-colors rounded-md ${
-            selectedDateStr === format(new Date(), "yyyy-MM-dd") 
+            selectedDateStr === todayStr 
               ? "bg-primary text-primary-foreground shadow-sm" 
               : "hover:bg-muted text-muted-foreground"
           }`}
@@ -110,7 +118,11 @@ export function DateSelector() {
         </button>
         <button 
           onClick={handleTomorrow}
-          className="px-3 py-1.5 text-xs font-medium hover:bg-muted text-muted-foreground rounded-md transition-colors"
+          className={`px-3 py-1.5 text-xs font-medium transition-colors rounded-md ${
+            selectedDateStr === tomorrowStr
+              ? "bg-primary text-primary-foreground shadow-sm" 
+              : "hover:bg-muted text-muted-foreground"
+          }`}
         >
           Tomorrow
         </button>

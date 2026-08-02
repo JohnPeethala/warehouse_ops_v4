@@ -117,7 +117,7 @@ export function ScheduleTable() {
   useEffect(() => { setLocalProfiles(profiles); }, [profiles]);
 
   const driverProfiles = localProfiles.filter(p => p.role === "driver" || p.role === "ground");
-  const gtProfiles = localProfiles.filter(p => p.role === "ground" || p.role === "supervisor");
+  const gtProfiles = localProfiles.filter(p => p.role === "ground");
 
   const vehicleDriverOptions = localVehicles.map(v => {
     return {
@@ -149,10 +149,11 @@ export function ScheduleTable() {
                   <input
                     type="checkbox"
                     className="w-4 h-4 rounded border-border/80 text-blue-600 focus:ring-blue-600 accent-blue-600 dark:accent-blue-500 cursor-pointer transition-colors"
-                    checked={selectedIds.size > 0 && selectedIds.size === allTicketIds.length}
+                    checked={allTicketIds.length > 0 && allTicketIds.every(id => selectedIds.has(id))}
                     ref={(input) => {
                       if (input) {
-                        input.indeterminate = selectedIds.size > 0 && selectedIds.size < allTicketIds.length;
+                        const selectedFilteredCount = allTicketIds.filter(id => selectedIds.has(id)).length;
+                        input.indeterminate = selectedFilteredCount > 0 && selectedFilteredCount < allTicketIds.length;
                       }
                     }}
                     onChange={toggleSelectAll}

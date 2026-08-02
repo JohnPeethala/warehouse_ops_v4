@@ -23,6 +23,10 @@ export function useTicketFilters(data: EnrichedTicket[], annotationsMap: Record<
   };
 
   const removeFilter = (key: string, val: string) => {
+    if (key === 'search') {
+      setSearchQuery("");
+      return;
+    }
     setColFilters(prev => {
       const set = prev[key];
       if (!set) return prev;
@@ -32,7 +36,10 @@ export function useTicketFilters(data: EnrichedTicket[], annotationsMap: Record<
     });
   };
 
-  const clearAllFilters = () => setColFilters({});
+  const clearAllFilters = () => {
+    setColFilters({});
+    setSearchQuery("");
+  };
 
   const filterOptions = useMemo(() => {
     const prioMap = new Map<string, number>();
@@ -134,6 +141,12 @@ export function useTicketFilters(data: EnrichedTicket[], annotationsMap: Record<
 
   const activeFilters = useMemo(() => {
     const list: { key: string, val: string, label: string }[] = [];
+    
+    // Add single Search pill
+    if (searchQuery) {
+      list.push({ key: 'search', val: 'active', label: `Search Active` });
+    }
+
     Object.entries(colFilters).forEach(([key, set]) => {
       if (set && set.size > 0) {
         set.forEach(val => {
@@ -153,7 +166,7 @@ export function useTicketFilters(data: EnrichedTicket[], annotationsMap: Record<
       }
     });
     return list;
-  }, [colFilters]);
+  }, [colFilters, searchQuery]);
 
   const filteredData = useMemo(() => {
     let result = data;

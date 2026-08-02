@@ -93,14 +93,16 @@ export function ScheduleHeader({
     }
 
     if (searchQuery) {
-      list.push({ key: 'search', val: searchQuery, label: `Search: ${searchQuery}` });
+      list.push({ key: 'search', val: 'active', label: `Search Active` });
     }
 
     return list;
   }, [colFilters, driverFilter, gtFilter, searchQuery, vehicles, profiles]);
 
   const removeFilter = (key: string, val: string) => {
-    if (key === 'search') setSearchQuery("");
+    if (key === 'search') {
+      setSearchQuery("");
+    }
     else if (key === 'driver') setDriverFilter("all");
     else if (key === 'gt') setGtFilter("all");
     else {
@@ -155,6 +157,8 @@ export function ScheduleHeader({
     });
   };
 
+  const [localSearch, setLocalSearch] = React.useState("");
+
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -201,19 +205,24 @@ export function ScheduleHeader({
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search tickets..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tickets... (Press Enter to add)"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && localSearch.trim()) {
+                  e.preventDefault();
+                  setSearchQuery(searchQuery ? `${searchQuery}, ${localSearch.trim()}` : localSearch.trim());
+                  setLocalSearch("");
+                }
+              }}
               onPaste={(e) => {
                 const paste = e.clipboardData.getData('text');
                 if (paste.includes('\n') || paste.includes('\r')) {
                   e.preventDefault();
                   const newItems = paste.split(/[\r\n]+/).map((i: string) => i.trim()).filter(Boolean);
-                  const before = searchQuery.slice(0, searchInputRef.current?.selectionStart || 0);
-                  const after = searchQuery.slice(searchInputRef.current?.selectionEnd || 0);
                   const inserted = newItems.join(', ');
-                  const finalVal = before + inserted + after;
-                  setSearchQuery(finalVal);
+                  setSearchQuery(searchQuery ? `${searchQuery}, ${inserted}` : inserted);
+                  setLocalSearch("");
                 }
               }}
               className="w-full bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm rounded-lg pl-9 pr-12 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
@@ -222,9 +231,9 @@ export function ScheduleHeader({
               <span className="text-[10px] font-medium text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded shadow-sm bg-background">⌘</span>
               <span className="text-[10px] font-medium text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded shadow-sm bg-background">K</span>
             </div>
-            {searchQuery && (
+            {localSearch && (
               <button 
-                onClick={() => setSearchQuery("")}
+                onClick={() => setLocalSearch("")}
                 className="absolute right-12 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 pointer-events-auto"
               >
                 <XCircle className="w-4 h-4" />

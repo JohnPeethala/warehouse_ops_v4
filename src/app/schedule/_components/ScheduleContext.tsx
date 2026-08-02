@@ -73,15 +73,25 @@ export function ScheduleProvider({
 
   const filteredGroupedData = useMemo(() => {
     return scheduleLogic.groupedData.map((group: any) => {
-      const q = searchQuery.toLowerCase();
       let tickets = group.tickets;
-      if (q) {
-        tickets = tickets.filter((log: any) => 
-          log.ticket_id?.toLowerCase().includes(q) ||
-          log.contact_name?.toLowerCase().includes(q) ||
-          log.location?.toLowerCase().includes(q) ||
-          log.pincode?.toLowerCase().includes(q)
-        );
+      if (searchQuery.trim()) {
+        const searchTerms = searchQuery
+          .split(',')
+          .map(t => t.trim().toLowerCase())
+          .filter(Boolean);
+
+        if (searchTerms.length > 0) {
+          tickets = tickets.filter((log: any) => {
+            const id = (log.ticket_id || "").toLowerCase();
+            const name = (log.contact_name || "").toLowerCase();
+            const loc = (log.location || "").toLowerCase();
+            const pin = (log.pincode || "").toLowerCase();
+            
+            return searchTerms.some(term => 
+              id.includes(term) || name.includes(term) || loc.includes(term) || pin.includes(term)
+            );
+          });
+        }
       }
 
       // Apply Driver Filter
@@ -143,6 +153,30 @@ export function ScheduleProvider({
     return acc;
   }, {} as Record<string, number>);
 
+  const toggleSelectAll = () => {
+    const filteredIds = filteredGroupedData.flatMap(g => g.tickets.map(t => t.id));
+    const allSelected = filteredIds.every(id => scheduleLogic.selectedIds.has(id));
+    
+    scheduleLogic.setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allSelected && filteredIds.length > 0) {
+        filteredIds.forEach(id => next.delete(id));
+      } else {
+        filteredIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const toggleSelect = (id: string) => {
+    scheduleLogic.setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const value = {
     ...scheduleLogic,
     searchQuery,
@@ -161,7 +195,9 @@ export function ScheduleProvider({
     lookups,
     subCategories,
     annotationsMap,
-    setAnnotationsMap
+    setAnnotationsMap,
+    toggleSelectAll,
+    toggleSelect
   };
 
   return (

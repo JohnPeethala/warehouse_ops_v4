@@ -10,7 +10,7 @@ import type { SortConfig } from "./types";
 type TicketTableHeaderProps = {
   showCheckboxes: boolean;
   showScheduleStatus: boolean;
-  selectedIdsSize: number;
+  selectedFilteredCount: number;
   filteredDataLength: number;
   toggleSelectAll: () => void;
   clearSelection: () => void;
@@ -25,7 +25,7 @@ type TicketTableHeaderProps = {
 export function TicketTableHeader({
   showCheckboxes,
   showScheduleStatus,
-  selectedIdsSize,
+  selectedFilteredCount,
   filteredDataLength,
   toggleSelectAll,
   clearSelection,
@@ -45,21 +45,21 @@ export function TicketTableHeader({
               <input
                 type="checkbox"
                 className="w-4 h-4 rounded border-border/80 text-blue-600 focus:ring-blue-600 accent-blue-600 dark:accent-blue-500 cursor-pointer transition-colors"
-                checked={selectedIdsSize > 0 && selectedIdsSize === filteredDataLength}
+                checked={selectedFilteredCount > 0 && selectedFilteredCount === filteredDataLength}
                 ref={(input) => {
                   if (input) {
-                    input.indeterminate = selectedIdsSize > 0 && selectedIdsSize < filteredDataLength;
+                    input.indeterminate = selectedFilteredCount > 0 && selectedFilteredCount < filteredDataLength;
                   }
                 }}
                 onChange={toggleSelectAll}
               />
-              {selectedIdsSize > 0 ? (
+              {selectedFilteredCount > 0 ? (
                 <button
                   onClick={clearSelection}
                   className="text-[10px] text-foreground dark:text-white font-bold leading-none mt-1 hover:text-red-500 flex items-center justify-center gap-0.5 transition-colors group cursor-pointer"
                   title="Clear Selection"
                 >
-                  ({selectedIdsSize})
+                  ({selectedFilteredCount})
                   <X size={10} className="text-muted-foreground group-hover:text-red-500" strokeWidth={3} />
                 </button>
               ) : (

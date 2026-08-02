@@ -7,9 +7,10 @@ type Props = {
   activeFilters: { key: string, val: string, label: string }[];
   removeFilter: (key: string, val: string) => void;
   clearAllFilters: () => void;
+  onFilterClick?: (key: string, val: string) => void;
 };
 
-export function ActiveFiltersBar({ activeFilters, removeFilter, clearAllFilters }: Props) {
+export function ActiveFiltersBar({ activeFilters, removeFilter, clearAllFilters, onFilterClick }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2 mb-3 min-h-[32px] px-1">
       <div className="flex items-center flex-wrap gap-2">
@@ -31,7 +32,12 @@ export function ActiveFiltersBar({ activeFilters, removeFilter, clearAllFilters 
 
               return (
                 <div key={af.key + af.val} className={`flex items-center gap-1.5 border rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-sm transition-all ${colorClass.split(' hover:')[0]}`}>
-                  <span>{af.label}</span>
+                  <span 
+                    onClick={() => onFilterClick && onFilterClick(af.key, af.val)}
+                    className={onFilterClick ? "cursor-pointer hover:underline" : ""}
+                  >
+                    {af.label}
+                  </span>
                   <button 
                     onClick={() => removeFilter(af.key, af.val)}
                     className={`rounded-full p-0.5 transition-colors ${colorClass.split(' ').find(c => c.startsWith('hover:')) || ''} ${colorClass.split(' ').find(c => c.startsWith('dark:hover:')) || ''}`}

@@ -22,14 +22,46 @@ export const StatusDropdown = ({
   const effectiveStatus = statusValue || "Pending";
   const effectiveSubStatus = subStatusValue || "Pending";
 
-  const getColorClasses = (color: string) => {
-    switch (color) {
-      case 'green': return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:opacity-80";
-      case 'red': return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 hover:opacity-80";
-      case 'amber': return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:opacity-80";
-      case 'blue': return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:opacity-80";
-      case 'purple': return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:opacity-80";
-      default: return "bg-background text-foreground border-border hover:opacity-80";
+  const getColorClasses = (color: string, mode: 'pill' | 'hover' | 'active' | 'dropdown_trigger' = 'dropdown_trigger') => {
+    let baseColor = color || 'zinc';
+    if (baseColor === 'green') baseColor = 'emerald';
+
+    if (mode === 'dropdown_trigger') {
+      switch (baseColor) {
+        case 'emerald': return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:opacity-80";
+        case 'red': return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 hover:opacity-80";
+        case 'amber': return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:opacity-80";
+        case 'blue': return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:opacity-80";
+        case 'purple': return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:opacity-80";
+        case 'orange': return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30 hover:opacity-80";
+        case 'zinc': return "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/30 hover:opacity-80";
+        default: return "bg-background text-foreground border-border hover:opacity-80";
+      }
+    }
+
+    if (mode === 'hover') {
+      switch (baseColor) {
+        case 'emerald': return "hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400";
+        case 'red': return "hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400";
+        case 'amber': return "hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400";
+        case 'blue': return "hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400";
+        case 'purple': return "hover:bg-purple-500/10 hover:text-purple-600 dark:hover:text-purple-400";
+        case 'orange': return "hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400";
+        case 'zinc': return "hover:bg-zinc-500/10 hover:text-zinc-700 dark:hover:text-zinc-300";
+        default: return "hover:bg-primary/10 hover:text-primary";
+      }
+    }
+
+    // active and pill
+    switch (baseColor) {
+      case 'emerald': return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
+      case 'red': return "bg-rose-500/10 text-rose-600 dark:text-rose-400";
+      case 'amber': return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
+      case 'blue': return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+      case 'purple': return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case 'orange': return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
+      case 'zinc': return "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300";
+      default: return "bg-primary/10 text-primary";
     }
   };
 
@@ -39,7 +71,7 @@ export const StatusDropdown = ({
   );
   
   const subColor = lookup?.sub_status_color || 'zinc';
-  const colorClasses = getColorClasses(subColor);
+  const colorClasses = getColorClasses(subColor, 'dropdown_trigger');
 
   return (
     <Popover open={open} onOpenChange={(val) => {
@@ -90,29 +122,11 @@ export const StatusDropdown = ({
             const sub = o.sub_status || o.status;
             const isActive = effectiveSubStatus === sub;
             
-            let hoverClass = "hover:bg-primary/10 hover:text-primary";
-            let activeClass = "bg-primary/10 text-primary";
-            let pillClass = "bg-primary/10 text-primary";
-
-            if (status === "Done") {
-              hoverClass = "hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400";
-              activeClass = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
-              pillClass = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
-            } else if (status === "Not Done") {
-              if (sub.toLowerCase().includes("cx")) {
-                hoverClass = "hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400";
-                activeClass = "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-                pillClass = "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-              } else {
-                hoverClass = "hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400";
-                activeClass = "bg-rose-500/10 text-rose-600 dark:text-rose-400";
-                pillClass = "bg-rose-500/10 text-rose-600 dark:text-rose-400";
-              }
-            } else if (status === "Pending") {
-              hoverClass = "hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400";
-              activeClass = "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-              pillClass = "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-            }
+            const itemColor = o.sub_status_color || o.status_color || 'zinc';
+            
+            const hoverClass = getColorClasses(itemColor, 'hover');
+            const activeClass = getColorClasses(itemColor, 'active');
+            const pillClass = getColorClasses(o.status_color || 'zinc', 'pill');
 
             return (
               <div 

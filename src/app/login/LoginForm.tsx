@@ -30,6 +30,12 @@ export function LoginForm() {
 
   const [state, formAction, isPending] = useActionState(handleAction, null);
 
+  useEffect(() => {
+    if (state?.success) {
+      window.location.href = '/';
+    }
+  }, [state]);
+
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">

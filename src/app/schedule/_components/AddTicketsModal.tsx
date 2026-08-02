@@ -8,6 +8,7 @@ import { useSubCategorySettings } from "@/components/providers/SubCategoryProvid
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { getCategoryDetails } from "@/lib/categoryUtils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const SubCategoryDropdown = ({ 
   value, 
@@ -103,10 +104,18 @@ export function AddTicketsModal({ isOpen, onClose, onTicketsAdded }: Props) {
   ]);
   const [submitting, setSubmitting] = useState(false);
 
+  const today = new Date();
+  const tzOffset = today.getTimezoneOffset() * 60000;
+  const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().slice(0, -1);
+  const todayStr = localISOTime.split('T')[0];
+
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setEntries([{ id: crypto.randomUUID(), ticketIdInput: "", loading: false, overrides: {} }]);
+      setSelectedDate(todayStr);
     }
   }, [isOpen]);
 
@@ -147,7 +156,7 @@ export function AddTicketsModal({ isOpen, onClose, onTicketsAdded }: Props) {
 
     setEntries(prev => prev.map(e => e.id === id ? { ...e, loading: true, error: undefined, isNewPrompt: false } : e));
 
-    const res = await fetchTicketByIdForSchedule(entry.ticketIdInput.trim());
+    const res = await fetchTicketByIdForSchedule(entry.ticketIdInput.trim(), selectedDate);
     
     setEntries(prev => prev.map(e => {
       if (e.id === id) {
@@ -232,7 +241,7 @@ export function AddTicketsModal({ isOpen, onClose, onTicketsAdded }: Props) {
     }));
 
     try {
-      const res = await addTicketsToSchedule(ticketsPayload);
+      const res = await addTicketsToSchedule(ticketsPayload, selectedDate);
       if (res.success) {
         toast.success(`Successfully added ${res.data?.length} tickets to schedule.`);
         onTicketsAdded(res.data || []);
@@ -259,9 +268,18 @@ export function AddTicketsModal({ isOpen, onClose, onTicketsAdded }: Props) {
             <h2 className="text-lg font-semibold text-foreground">Add Tickets to Schedule</h2>
             <p className="text-sm text-muted-foreground">Search by Ticket ID and verify data before adding.</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-40">
+              <DatePicker 
+                value={selectedDate}
+                onChange={setSelectedDate}
+                showTicketCounts={false}
+              />
+            </div>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

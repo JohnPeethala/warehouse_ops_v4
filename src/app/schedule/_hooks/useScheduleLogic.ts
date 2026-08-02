@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/schedule";
 
 import { Database } from "@/lib/supabase/database.types";
+import { toast } from "sonner";
 
 export type ScheduleLog = Database['public']['Tables']['ops_dispatch_log']['Row'] & { ops_route_sessions?: any };
 
@@ -46,7 +47,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
       }
       return merged;
     });
-  }, [initialLogs, optimisticLogs, optimisticSessions]);
+  }, [initialLogs, addedLogs, deletedIds, optimisticLogs, optimisticSessions]);
 
   // 2. Group the merged data by route
   const groupedData = useMemo(() => {
@@ -54,8 +55,8 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     const unassigned: ScheduleLog[] = [];
 
     data.forEach(log => {
-      const route = log.route?.toUpperCase();
-      if (route) {
+      const route = log.route?.toUpperCase() || "";
+      if (route && route !== "UNASSIGNED") {
         if (!groups[route]) groups[route] = [];
         groups[route].push(log);
       } else {
@@ -70,7 +71,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     }));
 
     if (unassigned.length > 0) {
-      sortedGroups.unshift({ route: "", tickets: unassigned });
+      sortedGroups.unshift({ route: "Unassigned", tickets: unassigned });
     }
 
     return sortedGroups;
@@ -214,12 +215,14 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
 
     const res = await deleteDispatchLog(id);
     if (!res.success) {
-      alert("Failed to delete ticket: " + res.error);
+      toast.error("Failed to delete ticket: " + res.error);
       setDeletedIds(prev => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
+    } else {
+      toast.success("Ticket removed from schedule");
     }
   }, []);
 
@@ -250,6 +253,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     filterOptions,
     nameCounts,
     toggleSelectAll,
-    toggleSelect
+    toggleSelect,
+    handleAddLogs
   };
 }

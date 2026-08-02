@@ -70,6 +70,5 @@ export async function login(prevState: any, formData: FormData) {
     }
   }
 
-  revalidatePath('/', 'layout')
-  redirect('/')
+  return { success: true }
 }

@@ -249,7 +249,7 @@ export async function bulkUpdateDispatchLogFields(ids: string[], updates: Record
   return { success: true };
 }
 
-export async function fetchTicketByIdForSchedule(ticketId: string) {
+export async function fetchTicketByIdForSchedule(ticketId: string, date?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Unauthorized" };
@@ -271,27 +271,27 @@ export async function fetchTicketByIdForSchedule(ticketId: string) {
     return { success: false, error: fetchError.message };
   }
 
-  // 2. Check if already in today's ops_dispatch_log
+  // 2. Check if already in the target date's ops_dispatch_log
   const today = new Date();
   const tzOffset = today.getTimezoneOffset() * 60000;
   const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().slice(0, -1);
-  const todayStr = localISOTime.split('T')[0];
+  const targetDateStr = date || localISOTime.split('T')[0];
 
   const { data: existingLog } = await supabase
     .from("ops_dispatch_log")
     .select("id")
     .eq("ticket_id", ticketId)
-    .eq("scheduled_date", todayStr)
+    .eq("scheduled_date", targetDateStr)
     .single();
 
   if (existingLog) {
-    return { success: false, error: "Ticket is already scheduled for today" };
+    return { success: false, error: `Ticket is already scheduled for ${targetDateStr}` };
   }
 
   return { success: true, data: ticket };
 }
 
-export async function addTicketsToSchedule(ticketsData: any[]) {
+export async function addTicketsToSchedule(ticketsData: any[], date?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Unauthorized" };
@@ -299,7 +299,7 @@ export async function addTicketsToSchedule(ticketsData: any[]) {
   const today = new Date();
   const tzOffset = today.getTimezoneOffset() * 60000;
   const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().slice(0, -1);
-  const todayStr = localISOTime.split('T')[0];
+  const targetDateStr = date || localISOTime.split('T')[0];
 
   const logsToInsert = [];
   
@@ -308,7 +308,7 @@ export async function addTicketsToSchedule(ticketsData: any[]) {
       // Insert new ticket into ops_staged_tickets
       const { data: newStagedTicket } = await supabase.from("ops_staged_tickets").insert({
         ticket_id: t.ticket_id,
-        date: todayStr,
+        date: targetDateStr,
         contact_name: t.contact_name,
         address1: t.address1,
         sub_category: t.sub_category,
@@ -333,18 +333,18 @@ export async function addTicketsToSchedule(ticketsData: any[]) {
     // Prepare dispatch log entry
     logsToInsert.push({
       ticket_id: t.ticket_id,
-      scheduled_date: todayStr,
-      route: "Unassigned", // Default
-      ops_status: "Pending", // Default
-      created_by: user.id,
-      address: t.address1, // Map address1 to address in ops_dispatch_log
-      // We copy all fields over based on the ticket object + any overrides
-      ...Object.keys(t).reduce((acc: any, key) => {
-        if (!['id', 'ticket_id', 'created_at', 'updated_at', 'route', 'ops_status', 'status', 'address1'].includes(key)) {
-          acc[key] = t[key];
-        }
-        return acc;
-      }, {})
+      scheduled_date: targetDateStr,
+      route: null, // Default to null so it's blank in the UI
+      status: "Pending", // Default
+      sub_status: "Pending", // Default
+      updated_by: user.id,
+      address: t.address1 || t.address || "",
+      sub_category: t.sub_category || "",
+      contact_name: t.contact_name || "",
+      pincode: t.pincode || "",
+      notes: t.notes || "",
+      remarks: t.remarks || "",
+      location: t.location || "",
     });
   }
 
@@ -360,6 +360,9 @@ export async function addTicketsToSchedule(ticketsData: any[]) {
 
   if (error) {
     console.error("Error adding tickets to schedule:", error);
+    if (error.code === '23505') {
+      return { success: false, error: "One or more of these tickets are already scheduled for this date." };
+    }
     return { success: false, error: error.message };
   }
 

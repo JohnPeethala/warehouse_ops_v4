@@ -97,7 +97,7 @@ export function CustomBatchSummaryModal({ isOpen, onClose, tickets }: CustomBatc
         <div className="flex items-center justify-between p-4 border-b border-border bg-muted/20 shrink-0">
           <div className="flex items-center gap-2 text-primary font-semibold">
             <FileBarChart2 size={18} />
-            <span>Custom Batch Summary Report</span>
+            <span>Backdated Tickets Summary Report</span>
           </div>
           <button 
             onClick={onClose}

@@ -45,11 +45,11 @@ export function UpdateBatchModal({ isOpen, onClose }: { isOpen: boolean; onClose
     try {
       const res = await updateCustomBatchIds(cleanedIds);
       if (!res.success) {
-        toast.error(res.error || "Failed to update custom batch");
+        toast.error(res.error || "Failed to update backdated tickets");
         return;
       }
 
-      toast.success(`Custom batch updated with ${cleanedIds.length} tickets`);
+      toast.success(`Backdated tickets updated with ${cleanedIds.length} tickets`);
       onClose();
       router.refresh();
     } catch (e: any) {
@@ -67,7 +67,7 @@ export function UpdateBatchModal({ isOpen, onClose }: { isOpen: boolean; onClose
         <div className="flex items-center justify-between p-4 border-b border-border/50">
           <div className="flex items-center gap-2">
             <ListPlus className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Update Custom Batch</h2>
+            <h2 className="text-lg font-semibold text-foreground">Update Backdated Tickets</h2>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />

@@ -1,3 +1,4 @@
+
 const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -6,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function testPush() {
   const { data: tickets, error: fetchError } = await supabase
     .from('ops_staged_tickets')
-    .select(`
+    .select(\
       ticket_id, 
       sub_category, 
       contact_name, 
@@ -17,7 +18,7 @@ async function testPush() {
         pincode, 
         notes
       )
-    `)
+    \)
     .in('ops_ticket_annotations.priority_tag', ['s', 'schedule']);
 
   console.log('fetchError:', fetchError);
@@ -37,10 +38,7 @@ async function testPush() {
       pincode: ann?.pincode || '',
       notes: ann?.notes || '',
       gt_map: null,
-      status: 'Pending',
-      sub_status: 'Pending',
-      updated_by: '29eb3544-d8ed-4b13-afc6-dcf461dbd15a',
-      route: null
+      status: 'Pending', 
     };
   });
 
@@ -54,3 +52,4 @@ async function testPush() {
   console.log('upsertError:', upsertError);
 }
 testPush();
+

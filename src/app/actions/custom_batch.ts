@@ -28,12 +28,12 @@ export async function updateCustomBatchIds(ticketIds: string[]) {
 
   const { error } = await supabase
     .from("ops_custom_batch")
-    .update({ 
+    .upsert({ 
+      id: 1,
       ticket_ids: ticketIds, 
       updated_at: new Date().toISOString(),
       updated_by: user.id 
-    })
-    .eq("id", 1);
+    });
 
   if (error) {
     console.error("Error updating custom batch IDs:", error);

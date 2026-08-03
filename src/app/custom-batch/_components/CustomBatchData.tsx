@@ -4,24 +4,24 @@ import { AlertCircle } from "lucide-react";
 import { CustomBatchSummaryTrigger } from "./CustomBatchSummaryTrigger";
 
 export async function CustomBatchData() {
-  const { data: batchData, error: batchError } = await getCustomBatchIds();
+  const { data: batchIdsData, error: batchError } = await getCustomBatchIds();
   
-  if (batchError || !batchData) {
+  if (batchError || !batchIdsData || !batchIdsData.ticket_ids || batchIdsData.ticket_ids.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center border rounded-xl border-dashed">
         <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
-        <p>No custom batch found. Click "Update Batch" to get started.</p>
+        <p>No backdated tickets found. Click "Update Backdated Tickets" to get started.</p>
       </div>
     );
   }
 
-  const { data: ticketsData, error: ticketsError } = await fetchCustomBatchTickets(batchData.ticket_ids || []);
+  const { data: ticketsData, error: ticketsError } = await fetchCustomBatchTickets(batchIdsData.ticket_ids || []);
 
   if (ticketsError) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-red-500 p-8 text-center border border-red-500/20 rounded-xl bg-red-500/5">
         <AlertCircle className="w-8 h-8 mb-2 opacity-80" />
-        <p>Failed to load custom batch tickets: {ticketsError}</p>
+        <p>Failed to load backdated tickets: {ticketsError}</p>
       </div>
     );
   }
@@ -30,7 +30,7 @@ export async function CustomBatchData() {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center border rounded-xl border-dashed bg-card/50">
         <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
-        <p>This custom batch is currently empty. Click "Update Batch" to paste Ticket IDs.</p>
+        <p>This backdated tickets list is currently empty. Click "Update Backdated Tickets" to paste Ticket IDs.</p>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export async function CustomBatchData() {
   return (
     <>
       <CustomBatchSummaryTrigger tickets={enrichedTickets} />
-      <ActiveTicketsView data={enrichedTickets} />
+      <ActiveTicketsView data={enrichedTickets} hideBulkActions={true} />
     </>
   );
 }

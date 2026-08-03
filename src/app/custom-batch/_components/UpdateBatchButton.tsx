@@ -16,7 +16,7 @@ export function UpdateBatchButton() {
         size="sm"
       >
         <ListPlus className="w-4 h-4" />
-        Update Batch IDs
+        Update Backdated Tickets
       </Button>
       
       <UpdateBatchModal 

@@ -167,23 +167,37 @@ export async function updateRouteSession(
   }
 
   // 2. Find if any ticket already has a gt_trip_id
-  const existingTripId = tickets.find(t => t.gt_trip_id)?.gt_trip_id;
+  let targetTripId = tickets.find(t => t.gt_trip_id)?.gt_trip_id;
 
-  if (existingTripId) {
+  // 3. If assigning a vehicle, check if it already has a session today to avoid unique constraint violations
+  if (updates.vehicle_id) {
+    const { data: existingVehicleSession } = await supabase
+      .from("ops_route_sessions")
+      .select("id")
+      .eq("trip_date", date)
+      .eq("vehicle_id", updates.vehicle_id)
+      .single();
+
+    if (existingVehicleSession) {
+      targetTripId = existingVehicleSession.id;
+    }
+  }
+
+  if (targetTripId) {
     // Update existing session
     const { error: updateError } = await supabase
       .from("ops_route_sessions")
       .update({ ...updates, updated_by: user.id })
-      .eq("id", existingTripId);
+      .eq("id", targetTripId);
 
     if (updateError) return { success: false, error: updateError.message };
     
     // Ensure all tickets in this route are linked to this trip
-    const unlinkedTickets = tickets.filter(t => t.gt_trip_id !== existingTripId);
+    const unlinkedTickets = tickets.filter(t => t.gt_trip_id !== targetTripId);
     if (unlinkedTickets.length > 0) {
       await supabase
         .from("ops_dispatch_log")
-        .update({ gt_trip_id: existingTripId })
+        .update({ gt_trip_id: targetTripId })
         .in("id", unlinkedTickets.map(t => t.id));
     }
   } else {

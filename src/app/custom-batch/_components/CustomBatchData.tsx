@@ -53,7 +53,7 @@ export async function CustomBatchData() {
   return (
     <>
       <CustomBatchSummaryTrigger tickets={enrichedTickets} />
-      <ActiveTicketsView data={enrichedTickets} hideBulkActions={true} />
+      <ActiveTicketsView data={enrichedTickets} />
     </>
   );
 }

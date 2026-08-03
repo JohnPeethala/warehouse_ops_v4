@@ -5,6 +5,8 @@ import { ActionResponse } from "@/lib/types";
 
 export async function pushToDispatchLog(date: string): Promise<ActionResponse> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" };
 
   // 1. Fetch tickets from active manifest (ops_staged_tickets) that have an 's' or 'schedule' annotation
   const { data: tickets, error: fetchError } = await supabase
@@ -46,7 +48,10 @@ export async function pushToDispatchLog(date: string): Promise<ActionResponse> {
       pincode: ann?.pincode || "",
       notes: ann?.notes || "",
       gt_map: null,
-      status: null, 
+      status: "Pending",
+      sub_status: "Pending",
+      updated_by: user.id,
+      route: null
     };
   });
 

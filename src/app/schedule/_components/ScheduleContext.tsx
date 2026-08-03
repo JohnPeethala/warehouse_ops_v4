@@ -119,6 +119,22 @@ export function ScheduleProvider({
             const name = log.contact_name?.trim() || "Unknown";
             if (!scheduleLogic.colFilters.contactName.has(name)) pass = false;
           }
+          if (scheduleLogic.colFilters.date && scheduleLogic.colFilters.date.size > 0) {
+             const dKey = log.scheduled_date || "-";
+             if (!scheduleLogic.colFilters.date.has(dKey)) pass = false;
+          }
+          if (scheduleLogic.colFilters.route && scheduleLogic.colFilters.route.size > 0) {
+             const rKey = log.route || "Unassigned";
+             if (!scheduleLogic.colFilters.route.has(rKey)) pass = false;
+          }
+          if (scheduleLogic.colFilters.schedule && scheduleLogic.colFilters.schedule.size > 0) {
+             const sKey = log.status || "Pending";
+             if (!scheduleLogic.colFilters.schedule.has(sKey)) pass = false;
+          }
+          if (scheduleLogic.colFilters.ops && scheduleLogic.colFilters.ops.size > 0) {
+             const oKey = log.sub_status || "Pending";
+             if (!scheduleLogic.colFilters.ops.has(oKey)) pass = false;
+          }
           return pass;
         });
       }

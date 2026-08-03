@@ -93,9 +93,42 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     setSelectedIds(next);
   };
 
-  const filterOptions = {
-    check: [], prio: [], schedule: [], date: [], route: [], tags: [], ops: []
-  };
+  const filterOptions = useMemo(() => {
+    const checkMap = new Map<string, number>();
+    const dateMap = new Map<string, number>();
+    const routeMap = new Map<string, number>();
+    const scheduleMap = new Map<string, number>();
+    const opsMap = new Map<string, number>();
+
+    data.forEach((log: any) => {
+      const isChecked = selectedIds.has(log.id) ? "Selected" : "Unselected";
+      checkMap.set(isChecked, (checkMap.get(isChecked) || 0) + 1);
+
+      const dKey = log.scheduled_date || "-";
+      dateMap.set(dKey, (dateMap.get(dKey) || 0) + 1);
+
+      const rKey = log.route || "Unassigned";
+      routeMap.set(rKey, (routeMap.get(rKey) || 0) + 1);
+
+      const sKey = log.status || "Pending";
+      scheduleMap.set(sKey, (scheduleMap.get(sKey) || 0) + 1);
+
+      const oKey = log.sub_status || "Pending";
+      opsMap.set(oKey, (opsMap.get(oKey) || 0) + 1);
+    });
+
+    const toOptions = (map: Map<string, number>) => Array.from(map.entries()).map(([label, count]) => ({ label, count })).sort((a, b) => a.label.localeCompare(b.label));
+
+    return {
+      check: toOptions(checkMap),
+      prio: [],
+      schedule: toOptions(scheduleMap),
+      date: toOptions(dateMap),
+      route: toOptions(routeMap),
+      tags: [],
+      ops: toOptions(opsMap)
+    };
+  }, [data, selectedIds]);
   
   const nameCounts = useMemo(() => {
     const counts: Record<string, number> = {};

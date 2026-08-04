@@ -127,7 +127,7 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
                     className="text-xs font-bold uppercase tracking-widest text-gray-500 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 w-full"
                   />
                 </div>
-              <p className="text-sm font-semibold text-gray-500 m-0 uppercase tracking-widest">{formattedDate}</p>
+              <p className="text-sm font-semibold text-gray-500 m-0 uppercase tracking-widest whitespace-nowrap ml-4">{formattedDate}</p>
             </div>
 
             {/* Main Body */}

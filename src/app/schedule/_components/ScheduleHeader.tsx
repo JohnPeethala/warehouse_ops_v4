@@ -92,10 +92,6 @@ export function ScheduleHeader({
       list.push({ key: 'gt', val: gtFilter, label: p ? `GT: ${p.name}` : 'GT' });
     }
 
-    if (searchQuery) {
-      list.push({ key: 'search', val: 'active', label: `Search Active` });
-    }
-
     return list;
   }, [colFilters, driverFilter, gtFilter, searchQuery, vehicles, profiles]);
 
@@ -157,8 +153,6 @@ export function ScheduleHeader({
     });
   };
 
-  const [localSearch, setLocalSearch] = React.useState("");
-
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -205,16 +199,9 @@ export function ScheduleHeader({
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search tickets... (Press Enter to add)"
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && localSearch.trim()) {
-                  e.preventDefault();
-                  setSearchQuery(searchQuery ? `${searchQuery}, ${localSearch.trim()}` : localSearch.trim());
-                  setLocalSearch("");
-                }
-              }}
+              placeholder="Search tickets, names, notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onPaste={(e) => {
                 const paste = e.clipboardData.getData('text');
                 if (paste.includes('\n') || paste.includes('\r')) {
@@ -222,19 +209,14 @@ export function ScheduleHeader({
                   const newItems = paste.split(/[\r\n]+/).map((i: string) => i.trim()).filter(Boolean);
                   const inserted = newItems.join(', ');
                   setSearchQuery(searchQuery ? `${searchQuery}, ${inserted}` : inserted);
-                  setLocalSearch("");
                 }
               }}
-              className="w-full bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm rounded-lg pl-9 pr-12 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+              className="w-full bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm rounded-lg pl-9 pr-8 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
             />
-            <div className="absolute right-2.5 flex items-center gap-1 pointer-events-none">
-              <span className="text-[10px] font-medium text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded shadow-sm bg-background">⌘</span>
-              <span className="text-[10px] font-medium text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded shadow-sm bg-background">K</span>
-            </div>
-            {localSearch && (
+            {searchQuery && (
               <button 
-                onClick={() => setLocalSearch("")}
-                className="absolute right-12 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 pointer-events-auto"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 pointer-events-auto"
               >
                 <XCircle className="w-4 h-4" />
               </button>

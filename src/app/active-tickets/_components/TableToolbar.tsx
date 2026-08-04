@@ -2,7 +2,7 @@
 
 import React, { RefObject } from "react";
 import { createPortal } from "react-dom";
-import { Search, XCircle, History, AlertTriangle, Star, Check, Send, Eraser, Loader2 } from "lucide-react";
+import { Search, XCircle, History, AlertTriangle, Star, Check, Send, Eraser, Loader2, Copy } from "lucide-react";
 import { PushToScheduleModal } from "./PushToScheduleModal";
 import { bulkClearPriorityTags } from "@/app/actions/annotations";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ type Props = {
   selectedIds?: Set<string>;
   setSelectedIds?: (val: Set<string>) => void;
   hideBulkActions?: boolean;
+  tickets?: any[];
 };
 
 export function TableToolbar({
@@ -36,7 +37,8 @@ export function TableToolbar({
   latestBatchTotal,
   selectedIds,
   setSelectedIds,
-  hideBulkActions
+  hideBulkActions,
+  tickets
 }: Props) {
   
   const today = new Date();
@@ -71,6 +73,24 @@ export function TableToolbar({
 
   const [isClearing, setIsClearing] = React.useState(false);
 
+  const handleCopyIDs = async () => {
+    if (!selectedIds || selectedIds.size === 0 || !tickets) return;
+    
+    const idsToCopy = tickets
+      .filter(t => selectedIds.has(t.id))
+      .map(t => t.ticket_id)
+      .join("\n");
+      
+    if (!idsToCopy) return;
+
+    try {
+      await navigator.clipboard.writeText(idsToCopy);
+      toast.success(`Copied ${selectedIds.size} Ticket IDs`);
+    } catch (err) {
+      toast.error("Failed to copy Ticket IDs");
+    }
+  };
+
   const handleClearTags = async () => {
     if (selectedIds && selectedIds.size > 0) {
       if (!confirm(`Are you sure you want to clear priority tags for ${selectedIds.size} selected tickets?`)) return;
@@ -95,8 +115,6 @@ export function TableToolbar({
     }
   };
 
-  const [localSearch, setLocalSearch] = React.useState("");
-
   return (
     <div className="flex items-center px-1 justify-between gap-4">
       <div className="relative w-full max-w-sm flex items-center">
@@ -104,16 +122,9 @@ export function TableToolbar({
         <input
           ref={searchInputRef}
           type="text"
-          placeholder="Search tickets... (Press Enter to add)"
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && localSearch.trim()) {
-              e.preventDefault();
-              setSearchQuery(searchQuery ? `${searchQuery}, ${localSearch.trim()}` : localSearch.trim());
-              setLocalSearch("");
-            }
-          }}
+          placeholder="Search tickets, names, notes..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           onPaste={(e) => {
             const paste = e.clipboardData.getData('text');
             if (paste.includes('\n') || paste.includes('\r')) {
@@ -121,19 +132,14 @@ export function TableToolbar({
               const newItems = paste.split(/[\r\n]+/).map(i => i.trim()).filter(Boolean);
               const inserted = newItems.join(', ');
               setSearchQuery(searchQuery ? `${searchQuery}, ${inserted}` : inserted);
-              setLocalSearch("");
             }
           }}
-          className="w-full bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm rounded-lg pl-9 pr-12 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+          className="w-full bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm rounded-lg pl-9 pr-8 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
         />
-        <div className="absolute right-2.5 flex items-center gap-1 pointer-events-none">
-          <span className="text-[10px] font-medium text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded shadow-sm bg-background">⌘</span>
-          <span className="text-[10px] font-medium text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded shadow-sm bg-background">K</span>
-        </div>
-        {localSearch && (
+        {searchQuery && (
           <button 
-            onClick={() => setLocalSearch("")}
-            className="absolute right-12 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 pointer-events-auto"
+            onClick={() => setSearchQuery("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 pointer-events-auto"
           >
             <XCircle className="w-4 h-4" />
           </button>
@@ -173,20 +179,32 @@ export function TableToolbar({
 
       {headerEl && !hideBulkActions && createPortal(
         <>
-          <button
-            onClick={() => {
-              setColFilters((prev: any) => ({
-                ...prev,
-                date: isCurrentlyBackdated ? null : new Set(backdatedDates)
-              }));
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap border border-border ${isCurrentlyBackdated ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-            title="Select backdated tickets in Date filter"
-          >
-            <History size={14} />
-            Backdated
-          </button>
+          {backdatedDates.length > 0 && (
+            <button
+              onClick={() => {
+                setColFilters((prev: any) => ({
+                  ...prev,
+                  date: isCurrentlyBackdated ? null : new Set(backdatedDates)
+                }));
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap border border-border ${isCurrentlyBackdated ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+              title="Select backdated tickets in Date filter"
+            >
+              <History size={14} />
+              Backdated
+            </button>
+          )}
           
+          <button
+            onClick={handleCopyIDs}
+            disabled={!selectedIds || selectedIds.size === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap border border-border bg-background text-foreground hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Copy selected Ticket IDs"
+          >
+            <Copy size={14} />
+            Copy IDs
+          </button>
+
           <button
             onClick={handleClearTags}
             disabled={isClearing}

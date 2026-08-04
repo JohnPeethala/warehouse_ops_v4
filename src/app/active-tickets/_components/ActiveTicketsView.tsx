@@ -62,6 +62,7 @@ export function ActiveTicketsView({ data, hideBulkActions }: Props) {
         selectedIds={selectedIds}
         setSelectedIds={setSelectedIds}
         hideBulkActions={hideBulkActions}
+        tickets={data}
       />
       
       <ActiveFiltersBar

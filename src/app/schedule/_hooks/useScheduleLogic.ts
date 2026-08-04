@@ -193,12 +193,28 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
 
   // Handle multiple fields update (e.g. status and sub_status)
   const handleFieldsUpdate = useCallback((id: string, updates: Record<string, string | null>) => {
-    setOptimisticLogs(prev => ({
-      ...prev,
-      [id]: { ...(prev[id] || {}), ...updates }
-    }));
-    updateDispatchLogFields(id, updates);
-  }, []);
+    let targetIds = [id];
+    if (selectedIds.has(id) && selectedIds.size > 1) {
+      targetIds = Array.from(selectedIds);
+    }
+
+    setOptimisticLogs(prev => {
+      const next = { ...prev };
+      targetIds.forEach(targetId => {
+        next[targetId] = { ...(next[targetId] || {}), ...updates };
+      });
+      return next;
+    });
+
+    targetIds.forEach(targetId => {
+      updateDispatchLogFields(targetId, updates);
+    });
+    
+    if (targetIds.length > 1) {
+      toast.success(`Updated status for ${targetIds.length} tickets`);
+      setSelectedIds(new Set()); // Auto-clear selection after bulk action
+    }
+  }, [selectedIds]);
 
   const handleAppendText = useCallback(async (id: string, field: 'notes' | 'remarks', newText: string) => {
     // Server action returns the fully formatted string
@@ -237,27 +253,51 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
   }, []);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this ticket from the schedule?")) return;
+    let targetIds = [id];
+    if (selectedIds.has(id) && selectedIds.size > 1) {
+      targetIds = Array.from(selectedIds);
+    }
+
+    const msg = targetIds.length > 1 
+      ? `Are you sure you want to delete these ${targetIds.length} tickets from the schedule?`
+      : "Are you sure you want to delete this ticket from the schedule?";
+    if (!window.confirm(msg)) return;
     
     // Optimistic delete
     setDeletedIds(prev => {
       const next = new Set(prev);
-      next.add(id);
+      targetIds.forEach(targetId => next.add(targetId));
       return next;
     });
 
-    const res = await deleteDispatchLog(id);
-    if (!res.success) {
-      toast.error("Failed to delete ticket: " + res.error);
-      setDeletedIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    } else {
-      toast.success("Ticket removed from schedule");
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const targetId of targetIds) {
+      const res = await deleteDispatchLog(targetId);
+      if (res.success) {
+        successCount++;
+      } else {
+        failCount++;
+        // Revert optimistic delete for this one
+        setDeletedIds(prev => {
+          const next = new Set(prev);
+          next.delete(targetId);
+          return next;
+        });
+      }
     }
-  }, []);
+
+    if (failCount > 0) {
+      toast.error(`Failed to delete ${failCount} tickets.`);
+    }
+    if (successCount > 0) {
+      toast.success(`Deleted ${successCount} tickets.`);
+      if (targetIds.length > 1) {
+        setSelectedIds(new Set()); // Auto-clear selection
+      }
+    }
+  }, [selectedIds]);
 
   const handleAddLogs = useCallback((newLogs: ScheduleLog[]) => {
     setAddedLogs(prev => [...prev, ...newLogs]);

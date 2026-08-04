@@ -142,11 +142,6 @@ export function useTicketFilters(data: EnrichedTicket[], annotationsMap: Record<
   const activeFilters = useMemo(() => {
     const list: { key: string, val: string, label: string }[] = [];
     
-    // Add single Search pill
-    if (searchQuery) {
-      list.push({ key: 'search', val: 'active', label: `Search Active` });
-    }
-
     Object.entries(colFilters).forEach(([key, set]) => {
       if (set && set.size > 0) {
         set.forEach(val => {

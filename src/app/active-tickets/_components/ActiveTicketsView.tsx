@@ -5,6 +5,7 @@ import { useSubCategorySettings } from "@/components/providers/SubCategoryProvid
 
 import type { EnrichedTicket } from "@/components/features/ticket-table/types";
 import { useTableLogic } from "../_hooks/useTableLogic";
+import { useRealtimeTickets } from "../_hooks/useRealtimeTickets";
 import { ReadinessBoard } from "./ReadinessBoard";
 import { TableToolbar } from "./TableToolbar";
 import { ActiveFiltersBar } from "./ActiveFiltersBar";
@@ -13,9 +14,11 @@ import { TicketTable } from "@/components/features/ticket-table/TicketTable";
 type Props = {
   data: EnrichedTicket[];
   hideBulkActions?: boolean;
+  acceptInserts?: boolean;
 };
 
-export function ActiveTicketsView({ data, hideBulkActions }: Props) {
+export function ActiveTicketsView({ data, hideBulkActions, acceptInserts = true }: Props) {
+  const { tickets: liveData } = useRealtimeTickets(data, acceptInserts);
   const {
     selectedIds,
     setSelectedIds,
@@ -42,7 +45,7 @@ export function ActiveTicketsView({ data, hideBulkActions }: Props) {
     nameCounts,
     toggleSelectAll,
     toggleSelect
-  } = useTableLogic(data);
+  } = useTableLogic(liveData);
 
   return (
     <div className="w-full h-full flex flex-col gap-4">

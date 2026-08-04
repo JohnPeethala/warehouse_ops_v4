@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useMemo, ReactNode } from "react";
 import { useScheduleLogic } from "../_hooks/useScheduleLogic";
+import { useRealtimeDispatchLogs } from "@/hooks/useRealtimeDispatchLogs";
 
 type ScheduleLogicReturn = ReturnType<typeof useScheduleLogic>;
 
@@ -29,7 +30,7 @@ const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined
 
 export function ScheduleProvider({ 
   children, 
-  logs, 
+  logs: initialLogs, 
   geoZones, 
   profiles, 
   vehicles, 
@@ -44,6 +45,7 @@ export function ScheduleProvider({
   lookups: any[];
   subCategories: any[];
 }) {
+  const { logs } = useRealtimeDispatchLogs(initialLogs);
   const scheduleLogic = useScheduleLogic(logs);
   
   const [searchQuery, setSearchQuery] = useState("");

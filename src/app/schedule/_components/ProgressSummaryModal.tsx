@@ -12,7 +12,7 @@ interface ProgressSummaryModalProps {
 export function ProgressSummaryModal({ isOpen, onClose, date, tickets }: ProgressSummaryModalProps) {
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [summaryTitle, setSummaryTitle] = useState("PROGRESS REPORT");
+  const [summaryTitle, setSummaryTitle] = useState("TASK SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
   const totalTickets = tickets.length;

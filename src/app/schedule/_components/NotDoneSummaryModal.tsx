@@ -17,7 +17,7 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isGrouped, setIsGrouped] = useState(false);
-  const [summaryTitle, setSummaryTitle] = useState("NOT DONE REPORT");
+  const [summaryTitle, setSummaryTitle] = useState("NOT DONE SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
   // Filter for only Not Done tickets

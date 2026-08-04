@@ -14,7 +14,7 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
   const [adhocCount, setAdhocCount] = useState<number | ''>('');
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [summaryTitle, setSummaryTitle] = useState("SUMMARY");
+  const [summaryTitle, setSummaryTitle] = useState("SCHEDULE SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
   const totalVehicles = (Number(regularCount) || 0) + (Number(adhocCount) || 0);

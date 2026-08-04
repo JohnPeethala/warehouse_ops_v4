@@ -12,6 +12,7 @@ interface CustomBatchSummaryModalProps {
 export function CustomBatchSummaryModal({ isOpen, onClose, tickets }: CustomBatchSummaryModalProps) {
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [summaryTitle, setSummaryTitle] = useState("BACKDATED CASES SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
   const matrix: Record<string, Record<string, number>> = {};
@@ -97,7 +98,7 @@ export function CustomBatchSummaryModal({ isOpen, onClose, tickets }: CustomBatc
         <div className="flex items-center justify-between p-4 border-b border-border bg-muted/20 shrink-0">
           <div className="flex items-center gap-2 text-primary font-semibold">
             <FileBarChart2 size={18} />
-            <span>Backdated Tickets Summary Report</span>
+            <span>Custom batch Summary Report</span>
           </div>
           <button 
             onClick={onClose}
@@ -119,9 +120,12 @@ export function CustomBatchSummaryModal({ isOpen, onClose, tickets }: CustomBatc
             <div className="bg-gray-50 px-6 py-5 border-b border-gray-200 flex justify-between items-center text-[#111827]">
               <div className="flex flex-col gap-1 w-full">
                 <h2 className="text-xl font-extrabold tracking-tight text-gray-900 m-0">CITYFURNISH HYD</h2>
-                <div className="text-xs font-bold uppercase tracking-widest text-gray-500">
-                  Backdated Cases Summary
-                </div>
+                <input 
+                  type="text"
+                  value={summaryTitle}
+                  onChange={(e) => setSummaryTitle(e.target.value)}
+                  className="text-xs font-bold uppercase tracking-widest text-gray-500 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 w-full"
+                />
               </div>
               <p className="text-sm font-semibold text-gray-500 m-0 uppercase tracking-widest whitespace-nowrap ml-4">
                 {todayDate}

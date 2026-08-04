@@ -10,7 +10,7 @@ export async function CustomBatchData() {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center border rounded-xl border-dashed">
         <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
-        <p>No backdated tickets found. Click "Update Backdated Tickets" to get started.</p>
+        <p>No Custom batch found. Click "Update Custom batch" to get started.</p>
       </div>
     );
   }
@@ -21,7 +21,7 @@ export async function CustomBatchData() {
     return (
       <div className="flex flex-col items-center justify-center h-full text-red-500 p-8 text-center border border-red-500/20 rounded-xl bg-red-500/5">
         <AlertCircle className="w-8 h-8 mb-2 opacity-80" />
-        <p>Failed to load backdated tickets: {ticketsError}</p>
+        <p>Failed to load Custom batch: {ticketsError}</p>
       </div>
     );
   }
@@ -30,7 +30,7 @@ export async function CustomBatchData() {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center border rounded-xl border-dashed bg-card/50">
         <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
-        <p>This backdated tickets list is currently empty. Click "Update Backdated Tickets" to paste Ticket IDs.</p>
+        <p>This Custom batch list is currently empty. Click "Update Custom batch" to paste Ticket IDs.</p>
       </div>
     );
   }

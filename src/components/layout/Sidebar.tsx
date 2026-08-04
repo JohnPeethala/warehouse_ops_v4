@@ -26,7 +26,7 @@ const navItems = [
   { name: 'Schedule', icon: CalendarDays, href: '/schedule' },
   { name: 'Route Planner', icon: Route, href: '/planner' },
   { name: 'Live Tracker', icon: Radar, href: '/live' },
-  { name: 'Backdated Tickets', icon: History, href: '/custom-batch' },
+  { name: 'Custom Batch', icon: History, href: '/custom-batch' },
 ]
 
 export function Sidebar() {

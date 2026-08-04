@@ -6,7 +6,7 @@ import { UpdateBatchButton } from "./_components/UpdateBatchButton";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Backdated Tickets | Warehouse Ops',
+  title: 'Custom batch | Warehouse Ops',
 }
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default function CustomBatchPage() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <History className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Backdated Tickets</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Custom batch</h1>
         </div>
         <div className="flex items-center gap-2" id="header-actions">
           <UpdateBatchButton />

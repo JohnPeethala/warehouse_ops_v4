@@ -55,7 +55,7 @@ export function ReportsManager({ initialData }: Props) {
         }
 
         headers = [
-          "Date", "Route", "Driver", "Vehicle No", "GT 1", "GT 2", "Status",
+          "Date", "Route", "Driver", "Vehicle No", "GT 1", "GT 2", "Status", "Sub Status",
           "GT Map Link", "Ops", "Ticket ID", "Name", "Location", "Pincode",
           "Notes", "Remarks", "Address", "Trip ID (UUID)"
         ];
@@ -68,7 +68,7 @@ export function ReportsManager({ initialData }: Props) {
           let tripId = "";
 
           if (t.ops_route_sessions) {
-            const s = t.ops_route_sessions;
+            const s = t.ops_route_sessions as any;
             tripId = s.id || "";
             const v = vehicles.find(x => x.id === s.vehicle_id);
             if (v) {
@@ -81,14 +81,14 @@ export function ReportsManager({ initialData }: Props) {
             if (gt2) gt2Name = gt2.name;
           }
 
-          const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date), "dd-MMM-yyyy") : "";
+          const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date as string), "dd-MMM-yyyy") : "";
           
           return [
             dateStr, t.route || "-", driverName, vehicleNo, gt1Name, gt2Name,
-            t.ops_status || "Pending", t.gt_map || "", t.sub_category || "Uncategorized",
+            t.status || "Pending", t.sub_status || "", t.gt_map || "", t.sub_category || "Uncategorized",
             t.ticket_id || "", t.contact_name || "", t.location || "", t.pincode || "",
-            (t.notes || "").replace(/\n/g, " "), (t.remarks || "").replace(/\n/g, " "),
-            (t.address || "").replace(/\n/g, " "), tripId
+            (t.notes as string || "").replace(/\n/g, " "), (t.remarks as string || "").replace(/\n/g, " "),
+            (t.address as string || "").replace(/\n/g, " "), tripId
           ];
         });
 

@@ -17,6 +17,7 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isGrouped, setIsGrouped] = useState(false);
+  const [summaryTitle, setSummaryTitle] = useState("NOT DONE REPORT");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
   // Filter for only Not Done tickets
@@ -154,12 +155,15 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
           >
             {/* Report Header */}
             <div className="bg-gray-50 px-6 py-5 border-b border-gray-200 flex justify-between items-center text-[#111827]">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-extrabold tracking-tight text-gray-900 m-0">CITYFURNISH HYD</h2>
-                <div className="text-xs font-bold uppercase tracking-widest text-gray-500">
-                  Not Done Report
+                <div className="flex flex-col gap-1 w-full max-w-[300px]">
+                  <h2 className="text-xl font-extrabold tracking-tight text-gray-900 m-0">CITYFURNISH HYD</h2>
+                  <input 
+                    type="text"
+                    value={summaryTitle}
+                    onChange={(e) => setSummaryTitle(e.target.value)}
+                    className="text-xs font-bold uppercase tracking-widest text-gray-500 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 w-full"
+                  />
                 </div>
-              </div>
               <p className="text-sm font-semibold text-gray-500 m-0 uppercase tracking-widest">{formattedDate}</p>
             </div>
 

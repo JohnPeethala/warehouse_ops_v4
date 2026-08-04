@@ -201,3 +201,23 @@ export async function updateLookupsOrder(items: { id: string; order_idx: number 
   revalidatePath('/settings');
   return { success: true };
 }
+
+// -----------------------------
+// SETTINGS
+// -----------------------------
+
+export async function updateManifestScript(script: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('cfg_settings')
+    .upsert({ key: 'manifest_processing_script', value: script });
+    
+  if (error) {
+    console.error("Error updating script:", error);
+    return { success: false, error: error.message };
+  }
+  
+  revalidatePath('/settings');
+  revalidatePath('/dashboard'); // in case it affects dashboard
+  return { success: true };
+}

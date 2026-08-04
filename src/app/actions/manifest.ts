@@ -3,7 +3,7 @@
 import * as XLSX from "xlsx";
 import { createClient } from "@/lib/supabase/server";
 
-const FILTER_WRAPUP_STATUS = true;
+import { shouldKeepTicket, mapCategory, extractTargetDate } from "@/lib/manifestRules";
 
 // Format Phone to +91 xxxxx xxxxx
 const formatPhone = (phoneStr: string) => {
@@ -85,24 +85,8 @@ export async function processAndUploadManifest(formData: FormData) {
     // First 4 rows are report metadata — row at index 4 (5th line) is the header
     const allRows = XLSX.utils.sheet_to_json(ws, { range: 4, defval: "" });
 
-    // Filter rows
-    const rows = (allRows as Record<string, unknown>[]).filter((r) => {
-      // 1. Drop blank Ticket IDs
-      const tid = r["Ticket Id"];
-      if (tid === undefined || tid === null || String(tid).trim() === "") {
-        return false;
-      }
-
-      // 2. Drop "wrapup" status if the switch is on
-      if (FILTER_WRAPUP_STATUS) {
-        const status = String(r["Status (Ticket)"] || "").toLowerCase();
-        if (status.includes("wrapup")) {
-          return false;
-        }
-      }
-
-      return true;
-    });
+    // Filter rows using the extracted rule
+    const rows = (allRows as Record<string, unknown>[]).filter(shouldKeepTicket);
 
     const supabase = await createClient();
     
@@ -126,42 +110,9 @@ export async function processAndUploadManifest(formData: FormData) {
       const address2 = (row["Address 2"] as string) || "";
       const combinedAddress = [address1, address2].filter(Boolean).join(", ");
       
-      const subCategoryStr = String(row["Sub Category"] || "").toLowerCase();
-      let subCategory = String(row["Sub Category"] || "");
-      let category = "Others";
-
-      if (subCategoryStr.includes("new") && subCategoryStr.includes("rental")) {
-        category = "Delivery";
-        subCategory = "Delivery";
-      } else if (subCategoryStr.includes("pickup")) {
-        category = "Pickup";
-        subCategory = "Pickup";
-      } else if (subCategoryStr.includes("install")) {
-        category = "Service";
-        subCategory = "Installation";
-      } else if (subCategoryStr.includes("repair")) {
-        category = "Service";
-        subCategory = "Repair";
-      } else if (subCategoryStr.includes("replace")) {
-        category = "Service";
-        subCategory = "Replace";
-      } else if (subCategoryStr.includes("relocat")) {
-        category = "Service";
-        subCategory = "Relocation";
-      }
-
-      const deliveryDate = formatDate(String(row["Delivery Scheduled Date"] || ""));
-      const pickupDate = formatDate(String(row["Pickup Scheduled On"] || ""));
-      const scheduledDate = formatDate(String(row["Scheduled Date"] || ""));
-
-      let finalDate = "";
-      if (category === "Delivery") {
-        finalDate = deliveryDate;
-      } else if (category === "Pickup") {
-        finalDate = pickupDate;
-      } else {
-        finalDate = scheduledDate;
-      }
+      const { category, subCategory } = mapCategory(row);
+      const rawTargetDate = extractTargetDate(row, category);
+      const finalDate = formatDate(rawTargetDate);
       
       return {
         ticket_id: String(row["Ticket Id"] || ""),

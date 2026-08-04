@@ -121,7 +121,7 @@ export function ScheduleHeader({
     const allTickets = filteredGroupedData.flatMap(g => g.tickets);
     
     const headers = [
-      "Date", "Route", "Driver", "Vehicle No", "GT 1", "GT 2", "Status", "GT Map Link", "Ops", "Ticket ID", "Name", "Location", "Pincode", "Notes", "Remarks", "Address"
+      "Date", "Route", "Driver", "Vehicle No", "GT 1", "GT 2", "Status", "Sub Status", "GT Map Link", "Ops", "Ticket ID", "Name", "Location", "Pincode", "Notes", "Remarks", "Address"
     ];
     
     const rows = allTickets.map(t => {
@@ -133,7 +133,7 @@ export function ScheduleHeader({
 
       return [
         dateStr, t.route || "-", vehicle ? vehicle.driver_name || "" : "", vehicle ? vehicle.vehicle_no || "" : "",
-        gt1?.name || "", gt2?.name || "", t.ops_status || "Pending", t.gt_map || "", t.sub_category || "Uncategorized",
+        gt1?.name || "", gt2?.name || "", t.status || "Pending", t.sub_status || "-", t.gt_map || "", t.sub_category || "Uncategorized",
         t.ticket_id || "", t.contact_name || "", t.location || "", t.pincode || "",
         (t.notes || "").replace(/\n/g, " "), (t.remarks || "").replace(/\n/g, " "), (t.address || "").replace(/\n/g, " ")
       ].map(cell => {

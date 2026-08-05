@@ -107,6 +107,60 @@ export function RouteGroupHeader({
                     }}
                   />
                 </div>
+                
+                {/* KM tracking block */}
+                <div className="flex items-center gap-3 ml-4 pl-4 border-l border-border/50">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Start KM</span>
+                    <input 
+                      type="number"
+                      className="w-20 px-2 py-1 text-xs border border-border/50 rounded bg-background hide-spinners"
+                      value={routeSession.starting_km || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        const updates: Record<string, any> = { starting_km: val };
+                        const end = routeSession.ending_km;
+                        if (val !== null && end !== null && end !== undefined) {
+                          updates.total_km = Math.max(0, end - val);
+                        }
+                        handleRouteSessionUpdate(group.route, tripDate, updates);
+                      }}
+                      placeholder="---"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">End KM</span>
+                    <input 
+                      type="number"
+                      className="w-20 px-2 py-1 text-xs border border-border/50 rounded bg-background hide-spinners"
+                      value={routeSession.ending_km || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        const updates: Record<string, any> = { ending_km: val };
+                        const start = routeSession.starting_km;
+                        if (val !== null && start !== null && start !== undefined) {
+                          updates.total_km = Math.max(0, val - start);
+                        }
+                        handleRouteSessionUpdate(group.route, tripDate, updates);
+                      }}
+                      placeholder="---"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Total</span>
+                    <input 
+                      type="number"
+                      className="w-16 px-2 py-1 text-xs border border-border/50 rounded bg-muted font-semibold text-primary hide-spinners"
+                      value={routeSession.total_km || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        handleRouteSessionUpdate(group.route, tripDate, { total_km: val });
+                      }}
+                      placeholder="---"
+                    />
+                    <span className="text-[10px] font-bold text-muted-foreground">KM</span>
+                  </div>
+                </div>
               </>
             )}
           </div>

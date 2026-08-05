@@ -232,7 +232,7 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
   const handleRouteSessionUpdate = useCallback(async (
     route: string, 
     date: string, 
-    updates: Record<string, string | null>
+    updates: Record<string, any>
   ) => {
     if (!route) return;
 

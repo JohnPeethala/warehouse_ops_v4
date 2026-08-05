@@ -173,3 +173,13 @@
     to   { background-position: -200% 0; }
   }
 }
+
+/* Hide number input spinners */
+.hide-spinners::-webkit-inner-spin-button,
+.hide-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.hide-spinners {
+  -moz-appearance: textfield;
+}

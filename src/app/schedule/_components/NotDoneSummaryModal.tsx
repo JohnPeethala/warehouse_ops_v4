@@ -77,7 +77,7 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
     try {
       setIsCopying(true);
       
-      await new Promise(resolve => setTimeout(resolve, 50)); 
+      await new Promise(resolve => setTimeout(resolve, 200)); 
       
       const blob = await toBlob(spreadsheetRef.current, {
         backgroundColor: '#1e293b', 

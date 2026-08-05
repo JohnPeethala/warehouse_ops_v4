@@ -55,7 +55,7 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
       setIsCopying(true);
       
       // Let React render the inputs as spans before capturing
-      await new Promise(resolve => setTimeout(resolve, 50)); 
+      await new Promise(resolve => setTimeout(resolve, 200)); 
       
       const blob = await toBlob(spreadsheetRef.current, {
         backgroundColor: '#1e293b', // Match footer color to hide any fractional bottom gap

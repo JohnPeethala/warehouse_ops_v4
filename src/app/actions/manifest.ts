@@ -128,7 +128,20 @@ export async function processAndUploadManifest(formData: FormData) {
       };
     });
 
-    // 1. Unlink annotations to prevent cascade deletion when staging table is cleared
+    // 1. Delete orphaned annotations (tickets not in the new manifest)
+    const newSheetIds = new Set(processed.map((p) => p.ticket_id));
+    const { data: existingAnns } = await supabase.from("ops_ticket_annotations").select("id, ticket_id");
+    
+    if (existingAnns) {
+      const idsToDelete = existingAnns.filter(a => !newSheetIds.has(a.ticket_id)).map(a => a.id);
+      
+      const delChunk = 150;
+      for (let i = 0; i < idsToDelete.length; i += delChunk) {
+        await supabase.from("ops_ticket_annotations").delete().in("id", idsToDelete.slice(i, i + delChunk));
+      }
+    }
+
+    // 2. Unlink remaining annotations to prevent cascade deletion when staging table is cleared
     const { error: unlinkError } = await supabase
       .from("ops_ticket_annotations")
       .update({ staged_ticket_id: null })

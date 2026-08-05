@@ -128,7 +128,18 @@ export async function processAndUploadManifest(formData: FormData) {
       };
     });
 
-    // 1. Delete old staged tickets to keep only current active manifest (optional, but typical for v3)
+    // 1. Unlink annotations to prevent cascade deletion when staging table is cleared
+    const { error: unlinkError } = await supabase
+      .from("ops_ticket_annotations")
+      .update({ staged_ticket_id: null })
+      .neq("ticket_id", "000000"); // Dummy condition to update all rows
+
+    if (unlinkError) {
+      console.error("Unlink Error:", unlinkError);
+      return { success: false, error: `Failed to unlink annotations: ${unlinkError.message || JSON.stringify(unlinkError)}` };
+    }
+
+    // 2. Delete old staged tickets to keep only current active manifest (optional, but typical for v3)
     const { error: deleteError } = await supabase
       .from("ops_staged_tickets")
       .delete()

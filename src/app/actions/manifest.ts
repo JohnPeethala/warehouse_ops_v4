@@ -132,8 +132,11 @@ export async function processAndUploadManifest(formData: FormData) {
     const newSheetIds = new Set(processed.map((p) => p.ticket_id));
     const { data: existingAnns } = await supabase.from("ops_ticket_annotations").select("id, ticket_id");
     
+    let annotationsToRelink: {id: string, ticket_id: string}[] = [];
+    
     if (existingAnns) {
       const idsToDelete = existingAnns.filter(a => !newSheetIds.has(a.ticket_id)).map(a => a.id);
+      annotationsToRelink = existingAnns.filter(a => newSheetIds.has(a.ticket_id));
       
       const delChunk = 150;
       for (let i = 0; i < idsToDelete.length; i += delChunk) {
@@ -174,6 +177,30 @@ export async function processAndUploadManifest(formData: FormData) {
       if (insertError) {
         console.error("Insert Error:", insertError);
         return { success: false, error: `Failed to insert staged tickets: ${insertError.message || JSON.stringify(insertError)}` };
+      }
+    }
+
+    // 5. Re-link kept annotations to the newly inserted staged tickets
+    if (annotationsToRelink.length > 0) {
+      const { data: newStaged } = await supabase.from("ops_staged_tickets").select("id, ticket_id").eq("batch_id", batchId);
+      
+      if (newStaged) {
+        const ticketToStagedId = new Map(newStaged.map(t => [t.ticket_id, t.id]));
+        
+        const updatePromises = [];
+        for (const ann of annotationsToRelink) {
+          const newStagedId = ticketToStagedId.get(ann.ticket_id);
+          if (newStagedId) {
+            updatePromises.push(
+              supabase.from("ops_ticket_annotations").update({ staged_ticket_id: newStagedId }).eq("id", ann.id)
+            );
+          }
+        }
+        
+        // Execute updates in parallel chunks of 50
+        for (let i = 0; i < updatePromises.length; i += 50) {
+          await Promise.all(updatePromises.slice(i, i + 50));
+        }
       }
     }
 

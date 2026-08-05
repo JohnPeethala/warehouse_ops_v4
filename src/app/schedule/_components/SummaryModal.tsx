@@ -17,9 +17,14 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
   const [summaryTitle, setSummaryTitle] = useState("SCHEDULE SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
+  // Overrides for editing
+  const [totalTicketsOverride, setTotalTicketsOverride] = useState<string>("");
+  const [opsOverrides, setOpsOverrides] = useState<Record<string, string>>({});
+
   const totalVehicles = (Number(regularCount) || 0) + (Number(adhocCount) || 0);
-  const totalTickets = tickets.length;
-  const ticketsPerVehicle = totalVehicles > 0 ? (totalTickets / totalVehicles).toFixed(1) : '0.0';
+  const baseTotalTickets = tickets.length;
+  const activeTotalTickets = totalTicketsOverride !== "" ? Number(totalTicketsOverride) : baseTotalTickets;
+  const ticketsPerVehicle = totalVehicles > 0 ? (activeTotalTickets / totalVehicles).toFixed(1) : '0.0';
   const totalPending = tickets.filter(t => t.status === 'Pending').length;
 
   // Dynamic category grouping with custom sorting
@@ -134,21 +139,41 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
             <div className="bg-white px-6 py-5 space-y-6 text-[#111827]">
               
               {/* Tickets Section */}
-              <div>
-                <div className="flex justify-between items-end mb-3 pb-2 border-b border-gray-200">
-                  <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Total Tickets</span>
-                  <span className="text-2xl font-black text-gray-900 leading-none">{totalTickets}</span>
+                <div>
+                  <div className="flex justify-between items-end mb-3 pb-2 border-b border-gray-200">
+                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Total Tickets</span>
+                    {isCopying ? (
+                      <span className="text-2xl font-black text-gray-900 leading-none">{activeTotalTickets}</span>
+                    ) : (
+                      <input 
+                        type="number"
+                        className="w-20 text-right bg-transparent text-2xl font-black text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none hide-spinners p-0 m-0 h-6"
+                        value={totalTicketsOverride !== "" ? totalTicketsOverride : baseTotalTickets}
+                        onChange={(e) => setTotalTicketsOverride(e.target.value)}
+                      />
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2.5 pt-1 pl-3 border-l border-gray-200 ml-1">
+                    {sortedCategories.map(([cat, count]) => {
+                      const activeCount = opsOverrides[cat] !== undefined && opsOverrides[cat] !== "" ? Number(opsOverrides[cat]) : count;
+                      return (
+                      <div key={cat} className="flex justify-between items-center text-sm">
+                        <span className="font-medium text-gray-600">{cat}</span>
+                        {isCopying ? (
+                          <span className="font-bold text-gray-800">{activeCount}</span>
+                        ) : (
+                          <input 
+                            type="number"
+                            className="w-16 text-right bg-transparent font-bold text-gray-800 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none hide-spinners p-0 m-0 h-5"
+                            value={opsOverrides[cat] !== undefined ? opsOverrides[cat] : count}
+                            onChange={(e) => setOpsOverrides(prev => ({ ...prev, [cat]: e.target.value }))}
+                          />
+                        )}
+                      </div>
+                    )})}
+                  </div>
                 </div>
-                
-                <div className="space-y-2.5 pt-1 pl-3 border-l border-gray-200 ml-1">
-                  {sortedCategories.map(([cat, count]) => (
-                    <div key={cat} className="flex justify-between items-center text-sm">
-                      <span className="font-medium text-gray-600">{cat}</span>
-                      <span className="font-bold text-gray-800">{count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* Vehicles Section */}
               <div>

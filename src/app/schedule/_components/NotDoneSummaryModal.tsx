@@ -20,9 +20,13 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
   const [summaryTitle, setSummaryTitle] = useState("NOT DONE SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
+  const [totalNotDoneOverride, setTotalNotDoneOverride] = useState<string>("");
+  const [opsOverrides, setOpsOverrides] = useState<Record<string, string>>({});
+
   // Filter for only Not Done tickets
   const notDoneTickets = tickets.filter(t => t.status === 'Not Done');
-  const totalNotDone = notDoneTickets.length;
+  const baseTotalNotDone = notDoneTickets.length;
+  const activeTotalNotDone = totalNotDoneOverride !== "" ? Number(totalNotDoneOverride) : baseTotalNotDone;
   
   // Ops breakdown for Flat List
   const opsBreakdown: Record<string, number> = {};
@@ -125,10 +129,10 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
               <span>Not Done Report</span>
             </div>
             
-            {totalNotDone > 0 && (
+            {baseTotalNotDone > 0 && (
               <div className="h-4 w-px bg-border hidden sm:block"></div>
             )}
-            {totalNotDone > 0 && (
+            {baseTotalNotDone > 0 && (
               <button
                 onClick={() => setIsGrouped(!isGrouped)}
                 className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-md border transition-colors ${isGrouped ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'}`}
@@ -170,7 +174,7 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
             {/* Main Body */}
             <div className="bg-white px-6 py-5 text-[#111827]">
               
-              {(isGrouped ? driverVehicleIssues.length : totalNotDone) === 0 ? (
+              {(isGrouped ? driverVehicleIssues.length : activeTotalNotDone) === 0 ? (
                 <div className="text-center py-6 text-gray-500 font-medium italic">
                   {isGrouped ? 'No driver or vehicle not done reported.' : 'No not done tickets today. Great job!'}
                 </div>
@@ -182,12 +186,22 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
                         <div className="flex flex-wrap gap-2">
                           {sortedOpsBreakdown.map(([cat, count]) => {
                             const { Icon, color } = getCategoryDetails(cat, subCategories);
+                            const activeCount = opsOverrides[cat] !== undefined && opsOverrides[cat] !== "" ? Number(opsOverrides[cat]) : count;
 
                             return (
                               <div key={cat} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border shadow-sm border-gray-200 bg-gray-50">
                                 <Icon size={12} className="shrink-0" style={{ color }} />
                                 <span className="font-bold uppercase tracking-widest text-[10px] text-gray-700">{cat}</span>
-                                <span className="font-black text-sm ml-1 text-gray-900">{count}</span>
+                                {isCopying ? (
+                                  <span className="font-black text-sm ml-1 text-gray-900">{activeCount}</span>
+                                ) : (
+                                  <input 
+                                    type="number"
+                                    className="w-10 ml-1 text-center bg-transparent font-black text-sm text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none hide-spinners p-0 m-0 h-4"
+                                    value={opsOverrides[cat] !== undefined ? opsOverrides[cat] : count}
+                                    onChange={(e) => setOpsOverrides(prev => ({ ...prev, [cat]: e.target.value }))}
+                                  />
+                                )}
                               </div>
                             );
                           })}
@@ -270,14 +284,27 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
             </div>
 
             {/* Footer Summary */}
-            <div className="bg-[#1e293b] text-white px-6 py-5 flex justify-between items-center">
-              <span className="text-xs text-gray-300 font-bold uppercase tracking-widest">
-                {isGrouped ? 'Driver & Vehicle Not Done' : 'Total Not Done'}
-              </span>
-              <span className="text-3xl font-black text-red-400 leading-none">
-                {isGrouped ? driverVehicleIssues.length : totalNotDone}
-              </span>
-            </div>
+            {!isGrouped && (
+              <div className="bg-[#1e293b] text-white px-6 py-5 flex justify-between items-center">
+                <span className="block text-xs text-gray-300 font-bold uppercase tracking-widest">Total Not Done</span>
+                {isCopying ? (
+                  <span className="block text-3xl font-black text-red-400 leading-none">{activeTotalNotDone}</span>
+                ) : (
+                  <input 
+                    type="number"
+                    className="w-24 text-right bg-transparent text-3xl font-black text-red-400 border-b border-dashed border-gray-600 focus:border-red-400 focus:outline-none hide-spinners p-0 m-0 h-8"
+                    value={totalNotDoneOverride !== "" ? totalNotDoneOverride : baseTotalNotDone}
+                    onChange={(e) => setTotalNotDoneOverride(e.target.value)}
+                  />
+                )}
+              </div>
+            )}
+            {isGrouped && (
+                <div className="bg-[#1e293b] text-white px-6 py-5 flex justify-between items-center">
+                    <span className="text-xs text-gray-300 font-bold uppercase tracking-widest">Driver & Vehicle Not Done</span>
+                    <span className="text-3xl font-black text-red-400 leading-none">{driverVehicleIssues.length}</span>
+                </div>
+            )}
             
           </div>
 

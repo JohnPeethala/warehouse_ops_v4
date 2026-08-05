@@ -15,7 +15,11 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets }: Progres
   const [summaryTitle, setSummaryTitle] = useState("TASK SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
 
-  const totalTickets = tickets.length;
+  // Overrides for editing
+  const [opsOverrides, setOpsOverrides] = useState<Record<string, { total?: string, delivered?: string, notDone?: string }>>({});
+  const [totalOverrides, setTotalOverrides] = useState<{ total?: string, delivered?: string, issues?: string }>({});
+
+  const baseTotalTickets = tickets.length;
   const matrix: Record<string, { total: number; delivered: number; notDone: number }> = {};
   
   let totalDelivered = 0;
@@ -43,13 +47,17 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets }: Progres
     }
   });
 
-  const completionRate = totalTickets > 0 ? Math.round((totalDelivered / totalTickets) * 100) : 0;
+  const activeTotalTickets = totalOverrides.total !== undefined && totalOverrides.total !== "" ? Number(totalOverrides.total) : baseTotalTickets;
+  const activeTotalDelivered = totalOverrides.delivered !== undefined && totalOverrides.delivered !== "" ? Number(totalOverrides.delivered) : totalDelivered;
+  const activeTotalIssues = totalOverrides.issues !== undefined && totalOverrides.issues !== "" ? Number(totalOverrides.issues) : totalIssues;
+
+  const completionRate = activeTotalTickets > 0 ? Math.round((activeTotalDelivered / activeTotalTickets) * 100) : 0;
 
   // Count unique vehicles
   const uniqueVehicles = new Set(tickets.map(t => t.ops_route_sessions?.vehicle_id).filter(Boolean)).size;
-  const tasksPerVehicle = uniqueVehicles > 0 ? (totalDelivered / uniqueVehicles).toFixed(1) : '—';
+  const tasksPerVehicle = uniqueVehicles > 0 ? (activeTotalDelivered / uniqueVehicles).toFixed(1) : '0.0';
 
-  const sortedCategories = Object.entries(matrix).sort((a, b) => {
+  const sortedMatrix = Object.entries(matrix).sort((a, b) => {
     const aName = a[0].toLowerCase();
     const bName = b[0].toLowerCase();
     const getRank = (name: string) => {
@@ -175,22 +183,93 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets }: Progres
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {sortedCategories.map(([cat, stats]) => (
-                      <tr key={cat} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-3 py-2.5 font-bold text-gray-700 truncate max-w-[120px]" title={cat}>{cat}</td>
-                        <td className="px-2 py-2.5 text-center font-black text-gray-900 bg-gray-50/50">{stats.total}</td>
-                        <td className="px-2 py-2.5 text-center font-bold text-green-600">{stats.delivered}</td>
-                        <td className="px-2 py-2.5 text-center font-bold text-red-600">{stats.notDone}</td>
+                      {sortedMatrix.map(([cat, stats]) => {
+                        const activeTotal = opsOverrides[cat]?.total !== undefined && opsOverrides[cat]?.total !== "" ? Number(opsOverrides[cat]?.total) : stats.total;
+                        const activeDelivered = opsOverrides[cat]?.delivered !== undefined && opsOverrides[cat]?.delivered !== "" ? Number(opsOverrides[cat]?.delivered) : stats.delivered;
+                        const activeNotDone = opsOverrides[cat]?.notDone !== undefined && opsOverrides[cat]?.notDone !== "" ? Number(opsOverrides[cat]?.notDone) : stats.notDone;
+
+                        return (
+                        <tr key={cat} className="border-b border-gray-100 last:border-b-0">
+                          <td className="px-3 py-2.5 font-bold text-gray-700 truncate max-w-[120px]" title={cat}>{cat}</td>
+                          <td className="px-2 py-2.5 text-center bg-gray-50/50">
+                            {isCopying ? (
+                              <span className="font-black text-gray-900">{activeTotal}</span>
+                            ) : (
+                              <input 
+                                type="number"
+                                className="w-12 text-center bg-transparent font-black text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none hide-spinners p-0 m-0 h-5"
+                                value={opsOverrides[cat]?.total !== undefined ? opsOverrides[cat].total : stats.total}
+                                onChange={(e) => setOpsOverrides(prev => ({ ...prev, [cat]: { ...prev[cat], total: e.target.value } }))}
+                              />
+                            )}
+                          </td>
+                          <td className="px-2 py-2.5 text-center">
+                            {isCopying ? (
+                              <span className="font-bold text-green-600">{activeDelivered}</span>
+                            ) : (
+                              <input 
+                                type="number"
+                                className="w-12 text-center bg-transparent font-bold text-green-600 border-b border-dashed border-gray-300 focus:border-green-500 focus:outline-none hide-spinners p-0 m-0 h-5"
+                                value={opsOverrides[cat]?.delivered !== undefined ? opsOverrides[cat].delivered : stats.delivered}
+                                onChange={(e) => setOpsOverrides(prev => ({ ...prev, [cat]: { ...prev[cat], delivered: e.target.value } }))}
+                              />
+                            )}
+                          </td>
+                          <td className="px-2 py-2.5 text-center">
+                            {isCopying ? (
+                              <span className="font-bold text-red-600">{activeNotDone}</span>
+                            ) : (
+                              <input 
+                                type="number"
+                                className="w-12 text-center bg-transparent font-bold text-red-600 border-b border-dashed border-gray-300 focus:border-red-500 focus:outline-none hide-spinners p-0 m-0 h-5"
+                                value={opsOverrides[cat]?.notDone !== undefined ? opsOverrides[cat].notDone : stats.notDone}
+                                onChange={(e) => setOpsOverrides(prev => ({ ...prev, [cat]: { ...prev[cat], notDone: e.target.value } }))}
+                              />
+                            )}
+                          </td>
+                        </tr>
+                      )})}
+                    </tbody>
+                    <tfoot className="bg-gray-100 border-t-2 border-gray-200">
+                      <tr>
+                        <td className="px-3 py-3 text-gray-900 font-black tracking-widest text-xs">TOTAL</td>
+                        <td className="px-2 py-3 text-center">
+                          {isCopying ? (
+                            <span className="text-gray-900 font-black text-lg leading-none">{activeTotalTickets}</span>
+                          ) : (
+                            <input 
+                              type="number"
+                              className="w-14 text-center bg-transparent text-gray-900 font-black text-lg border-b border-dashed border-gray-400 focus:border-blue-500 focus:outline-none hide-spinners p-0 m-0 h-6"
+                              value={totalOverrides.total !== undefined ? totalOverrides.total : baseTotalTickets}
+                              onChange={(e) => setTotalOverrides(prev => ({ ...prev, total: e.target.value }))}
+                            />
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          {isCopying ? (
+                            <span className="text-green-600 font-black text-lg leading-none">{activeTotalDelivered}</span>
+                          ) : (
+                            <input 
+                              type="number"
+                              className="w-14 text-center bg-transparent text-green-600 font-black text-lg border-b border-dashed border-gray-400 focus:border-green-500 focus:outline-none hide-spinners p-0 m-0 h-6"
+                              value={totalOverrides.delivered !== undefined ? totalOverrides.delivered : totalDelivered}
+                              onChange={(e) => setTotalOverrides(prev => ({ ...prev, delivered: e.target.value }))}
+                            />
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          {isCopying ? (
+                            <span className="text-red-600 font-black text-lg leading-none">{activeTotalIssues}</span>
+                          ) : (
+                            <input 
+                              type="number"
+                              className="w-14 text-center bg-transparent text-red-600 font-black text-lg border-b border-dashed border-gray-400 focus:border-red-500 focus:outline-none hide-spinners p-0 m-0 h-6"
+                              value={totalOverrides.issues !== undefined ? totalOverrides.issues : totalIssues}
+                              onChange={(e) => setTotalOverrides(prev => ({ ...prev, issues: e.target.value }))}
+                            />
+                          )}
+                        </td>
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-gray-100 border-t-2 border-gray-200">
-                    <tr>
-                      <td className="px-3 py-3 text-gray-900 font-black tracking-widest text-xs">TOTAL</td>
-                      <td className="px-2 py-3 text-center text-gray-900 font-black text-lg leading-none">{totalTickets}</td>
-                      <td className="px-2 py-3 text-center text-green-600 font-black text-lg leading-none">{totalDelivered}</td>
-                      <td className="px-2 py-3 text-center text-red-600 font-black text-lg leading-none">{totalIssues}</td>
-                    </tr>
                   </tfoot>
                 </table>
               </div>

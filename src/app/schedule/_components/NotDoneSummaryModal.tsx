@@ -242,10 +242,9 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
                           <table className="w-full text-xs text-left">
                             <thead className="bg-gray-50 border-b border-gray-200 uppercase tracking-wider font-bold text-gray-500">
                               <tr>
-                                <th className="px-2 py-2">ID</th>
-                                <th className="px-2 py-2">Name</th>
                                 <th className="px-2 py-2">Ops</th>
                                 <th className="px-2 py-2">Reason</th>
+                                <th className="px-2 py-2">Remarks</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -253,20 +252,9 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
                                 const isCx = (t.sub_status || '').toLowerCase().includes('cx');
                                 return (
                                   <tr key={t.id || tIdx} className="hover:bg-gray-50">
-                                    <td className="px-2 py-2 whitespace-nowrap">
-                                      <a 
-                                        href={`https://desk.zoho.com/agent/cityfurnish1/support/all-modules/search?searchDept=currentDept&searchWord=${t.ticket_id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        {t.ticket_id}
-                                      </a>
-                                    </td>
-                                    <td className="px-2 py-2 font-medium text-gray-800 truncate max-w-[100px]" title={t.contact_name}>{t.contact_name}</td>
                                     <td className="px-2 py-2 text-gray-600">{t.sub_category || '-'}</td>
                                     <td className={`px-2 py-2 font-bold ${isCx ? 'text-blue-600' : 'text-red-600'}`}>{t.sub_status || 'Not Done'}</td>
+                                    <td className="px-2 py-2 text-gray-500 truncate max-w-[150px]" title={t.remarks || ''}>{t.remarks || '-'}</td>
                                   </tr>
                                 );
                               })}

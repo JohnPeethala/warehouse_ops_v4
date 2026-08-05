@@ -231,7 +231,7 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
                   </div>
                   ) : (
                     sortedGroups.map((group, idx) => (
-                      <div key={idx}>
+                      <div key={idx} className="mb-4 last:mb-0">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <div className="bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200 flex items-center shadow-sm">
                              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mr-2 border-r border-gray-300 pr-2">Driver</span>
@@ -242,9 +242,9 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
                           <table className="w-full text-xs text-left">
                             <thead className="bg-gray-50 border-b border-gray-200 uppercase tracking-wider font-bold text-gray-500">
                               <tr>
-                                <th className="px-2 py-2">Ops</th>
-                                <th className="px-2 py-2">Reason</th>
-                                <th className="px-2 py-2">Remarks</th>
+                                <th className="px-2 py-2 w-[20%]">Ops</th>
+                                <th className="px-2 py-2 w-[35%]">Reason</th>
+                                <th className="px-2 py-2 w-[45%]">Remarks</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">

@@ -109,12 +109,12 @@ export function RouteGroupHeader({
                 </div>
                 
                 {/* KM tracking block */}
-                <div className="flex items-center gap-3 ml-4 pl-4 border-l border-border/50">
+                <div className="flex items-center gap-3 ml-4 pl-4 border-l border-border/50 bg-amber-50/50 dark:bg-amber-500/10 py-1 px-3 rounded-lg border border-amber-200/50 dark:border-amber-500/20">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Start KM</span>
+                    <span className="text-[10px] font-bold text-amber-700/70 dark:text-amber-400/70 uppercase">Start KM</span>
                     <input 
                       type="number"
-                      className="w-20 px-2 py-1 text-xs border border-border/50 rounded bg-background hide-spinners"
+                      className="w-20 px-2 py-1 text-xs border border-amber-200 dark:border-amber-700/50 rounded bg-white dark:bg-zinc-900 text-amber-900 dark:text-amber-100 font-semibold hide-spinners outline-none focus:ring-1 focus:ring-amber-400"
                       value={routeSession.starting_km || ''}
                       onChange={(e) => {
                         const val = e.target.value ? Number(e.target.value) : null;
@@ -129,10 +129,10 @@ export function RouteGroupHeader({
                     />
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">End KM</span>
+                    <span className="text-[10px] font-bold text-amber-700/70 dark:text-amber-400/70 uppercase">End KM</span>
                     <input 
                       type="number"
-                      className="w-20 px-2 py-1 text-xs border border-border/50 rounded bg-background hide-spinners"
+                      className="w-20 px-2 py-1 text-xs border border-amber-200 dark:border-amber-700/50 rounded bg-white dark:bg-zinc-900 text-amber-900 dark:text-amber-100 font-semibold hide-spinners outline-none focus:ring-1 focus:ring-amber-400"
                       value={routeSession.ending_km || ''}
                       onChange={(e) => {
                         const val = e.target.value ? Number(e.target.value) : null;
@@ -147,10 +147,10 @@ export function RouteGroupHeader({
                     />
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Total</span>
+                    <span className="text-[10px] font-bold text-amber-700/70 dark:text-amber-400/70 uppercase">Total</span>
                     <input 
                       type="number"
-                      className="w-16 px-2 py-1 text-xs border border-border/50 rounded bg-muted font-semibold text-primary hide-spinners"
+                      className="w-16 px-2 py-1 text-xs border border-amber-300 dark:border-amber-600 rounded bg-amber-100 dark:bg-amber-900/40 font-bold text-amber-900 dark:text-amber-100 hide-spinners outline-none focus:ring-1 focus:ring-amber-500"
                       value={routeSession.total_km || ''}
                       onChange={(e) => {
                         const val = e.target.value ? Number(e.target.value) : null;
@@ -158,7 +158,7 @@ export function RouteGroupHeader({
                       }}
                       placeholder="---"
                     />
-                    <span className="text-[10px] font-bold text-muted-foreground">KM</span>
+                    <span className="text-[10px] font-bold text-amber-700/70 dark:text-amber-400/70">KM</span>
                   </div>
                 </div>
               </>

@@ -393,7 +393,7 @@ export async function fetchBulkScheduleData(startDate: string, endDate: string) 
     .select(`
       *,
       ops_route_sessions (
-        id, vehicle_id, gt1_id, gt2_id, trip_date, total_tickets, done_tickets, not_done_tickets, pending_tickets
+        id, vehicle_id, gt1_id, gt2_id, trip_date, starting_km, ending_km, total_km, total_tickets, done_tickets, not_done_tickets, pending_tickets
       )
     `)
     .gte("scheduled_date", startDate)

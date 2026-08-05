@@ -250,11 +250,12 @@ export function NotDoneSummaryModal({ isOpen, onClose, date, tickets, vehicles, 
                             <tbody className="divide-y divide-gray-100">
                               {group.tickets.map((t, tIdx) => {
                                 const isCx = (t.sub_status || '').toLowerCase().includes('cx');
+                                const cleanedRemarks = (t.remarks || '').replace(/\[.*?\]\s*/g, '').trim();
                                 return (
                                   <tr key={t.id || tIdx} className="hover:bg-gray-50">
                                     <td className="px-2 py-2 text-gray-600">{t.sub_category || '-'}</td>
                                     <td className={`px-2 py-2 font-bold ${isCx ? 'text-blue-600' : 'text-red-600'}`}>{t.sub_status || 'Not Done'}</td>
-                                    <td className="px-2 py-2 text-gray-500 truncate max-w-[150px]" title={t.remarks || ''}>{t.remarks || '-'}</td>
+                                    <td className="px-2 py-2 text-gray-500 truncate max-w-[150px]" title={cleanedRemarks}>{cleanedRemarks || '-'}</td>
                                   </tr>
                                 );
                               })}

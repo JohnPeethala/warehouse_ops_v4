@@ -187,19 +187,18 @@ export async function processAndUploadManifest(formData: FormData) {
       if (newStaged) {
         const ticketToStagedId = new Map(newStaged.map(t => [t.ticket_id, t.id]));
         
-        const updatePromises = [];
         for (const ann of annotationsToRelink) {
           const newStagedId = ticketToStagedId.get(ann.ticket_id);
           if (newStagedId) {
-            updatePromises.push(
-              supabase.from("ops_ticket_annotations").update({ staged_ticket_id: newStagedId }).eq("id", ann.id)
-            );
+            const { error: relinkErr } = await supabase
+              .from("ops_ticket_annotations")
+              .update({ staged_ticket_id: newStagedId })
+              .eq("id", ann.id);
+              
+            if (relinkErr) {
+              console.error(`Failed to relink annotation ${ann.id}:`, relinkErr);
+            }
           }
-        }
-        
-        // Execute updates in parallel chunks of 50
-        for (let i = 0; i < updatePromises.length; i += 50) {
-          await Promise.all(updatePromises.slice(i, i + 50));
         }
       }
     }

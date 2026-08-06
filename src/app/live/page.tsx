@@ -32,7 +32,7 @@ export default async function LiveTrackerPage({
         </div>
       </div>
       
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0 relative overflow-y-auto custom-scrollbar pr-2">
         <LiveTrackerClient 
           initialTickets={tickets || []} 
           lookups={lookups || []} 

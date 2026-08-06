@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { CheckCircle2, Circle } from "lucide-react";
 import { EntityDropdown } from "./cells/EntityDropdown";
 import { useScheduleContext } from "./ScheduleContext";
@@ -25,6 +25,16 @@ export function RouteGroupHeader({
   const isUnassigned = !group.route;
   const routeSession = group.tickets[0]?.ops_route_sessions || {};
   const tripDate = group.tickets[0]?.scheduled_date || group.tickets[0]?.created_at;
+
+  const [startKm, setStartKm] = useState(routeSession.starting_km?.toString() || "");
+  const [endKm, setEndKm] = useState(routeSession.ending_km?.toString() || "");
+  const [totalKm, setTotalKm] = useState(routeSession.total_km?.toString() || "");
+
+  useEffect(() => {
+    setStartKm(routeSession.starting_km?.toString() || "");
+    setEndKm(routeSession.ending_km?.toString() || "");
+    setTotalKm(routeSession.total_km?.toString() || "");
+  }, [routeSession.starting_km, routeSession.ending_km, routeSession.total_km]);
 
   return (
     <tr className="bg-zinc-100 dark:bg-zinc-900 border-y border-border/50">
@@ -115,15 +125,19 @@ export function RouteGroupHeader({
                     <input 
                       type="number"
                       className="w-20 px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 font-semibold hide-spinners outline-none focus:ring-1 focus:ring-slate-400"
-                      value={routeSession.starting_km || ''}
-                      onChange={(e) => {
-                        const val = e.target.value ? Number(e.target.value) : null;
-                        const updates: Record<string, any> = { starting_km: val };
-                        const end = routeSession.ending_km;
-                        if (val !== null && end !== null && end !== undefined) {
-                          updates.total_km = Math.max(0, end - val);
+                      value={startKm}
+                      onChange={(e) => setStartKm(e.target.value)}
+                      onBlur={() => {
+                        const val = startKm ? Number(startKm) : null;
+                        if (val !== routeSession.starting_km) {
+                          const updates: Record<string, any> = { starting_km: val };
+                          const end = endKm ? Number(endKm) : null;
+                          if (val !== null && end !== null) {
+                            updates.total_km = Math.max(0, end - val);
+                            setTotalKm(updates.total_km.toString());
+                          }
+                          handleRouteSessionUpdate(group.route, tripDate, updates);
                         }
-                        handleRouteSessionUpdate(group.route, tripDate, updates);
                       }}
                       placeholder="---"
                     />
@@ -133,15 +147,19 @@ export function RouteGroupHeader({
                     <input 
                       type="number"
                       className="w-20 px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 font-semibold hide-spinners outline-none focus:ring-1 focus:ring-slate-400"
-                      value={routeSession.ending_km || ''}
-                      onChange={(e) => {
-                        const val = e.target.value ? Number(e.target.value) : null;
-                        const updates: Record<string, any> = { ending_km: val };
-                        const start = routeSession.starting_km;
-                        if (val !== null && start !== null && start !== undefined) {
-                          updates.total_km = Math.max(0, val - start);
+                      value={endKm}
+                      onChange={(e) => setEndKm(e.target.value)}
+                      onBlur={() => {
+                        const val = endKm ? Number(endKm) : null;
+                        if (val !== routeSession.ending_km) {
+                          const updates: Record<string, any> = { ending_km: val };
+                          const start = startKm ? Number(startKm) : null;
+                          if (val !== null && start !== null) {
+                            updates.total_km = Math.max(0, val - start);
+                            setTotalKm(updates.total_km.toString());
+                          }
+                          handleRouteSessionUpdate(group.route, tripDate, updates);
                         }
-                        handleRouteSessionUpdate(group.route, tripDate, updates);
                       }}
                       placeholder="---"
                     />
@@ -151,10 +169,13 @@ export function RouteGroupHeader({
                     <input 
                       type="number"
                       className="w-16 px-2 py-1 text-xs border border-slate-300 dark:border-slate-600 rounded bg-slate-100 dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100 hide-spinners outline-none focus:ring-1 focus:ring-slate-400"
-                      value={routeSession.total_km || ''}
-                      onChange={(e) => {
-                        const val = e.target.value ? Number(e.target.value) : null;
-                        handleRouteSessionUpdate(group.route, tripDate, { total_km: val });
+                      value={totalKm}
+                      onChange={(e) => setTotalKm(e.target.value)}
+                      onBlur={() => {
+                        const val = totalKm ? Number(totalKm) : null;
+                        if (val !== routeSession.total_km) {
+                          handleRouteSessionUpdate(group.route, tripDate, { total_km: val });
+                        }
                       }}
                       placeholder="---"
                     />

@@ -37,10 +37,12 @@ export function RouteGroupHeader({
 
     // Auto-calculate and push to DB if missing/incorrect when both start and end exist (e.g. from mobile app)
     if (s !== null && s !== undefined && e !== null && e !== undefined && !isUnassigned) {
-      const computedTotal = Math.max(0, e - s);
-      if (t !== computedTotal) {
-        handleRouteSessionUpdate(group.route, tripDate, { total_km: computedTotal });
-        t = computedTotal;
+      if (Number(s) > 0 || Number(e) > 0) {
+        const computedTotal = Math.max(0, Number(e) - Number(s));
+        if (t !== computedTotal) {
+          handleRouteSessionUpdate(group.route, tripDate, { total_km: computedTotal });
+          t = computedTotal;
+        }
       }
     }
 

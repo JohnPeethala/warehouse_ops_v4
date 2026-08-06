@@ -31,10 +31,24 @@ export function RouteGroupHeader({
   const [totalKm, setTotalKm] = useState(routeSession.total_km?.toString() || "");
 
   useEffect(() => {
-    setStartKm(routeSession.starting_km?.toString() || "");
-    setEndKm(routeSession.ending_km?.toString() || "");
-    setTotalKm(routeSession.total_km?.toString() || "");
-  }, [routeSession.starting_km, routeSession.ending_km, routeSession.total_km]);
+    const s = routeSession.starting_km;
+    const e = routeSession.ending_km;
+    let t = routeSession.total_km;
+
+    // Auto-calculate and push to DB if missing/incorrect when both start and end exist (e.g. from mobile app)
+    if (s !== null && s !== undefined && e !== null && e !== undefined && !isUnassigned) {
+      const computedTotal = Math.max(0, e - s);
+      if (t !== computedTotal) {
+        handleRouteSessionUpdate(group.route, tripDate, { total_km: computedTotal });
+        t = computedTotal;
+      }
+    }
+
+    setStartKm(s?.toString() || "");
+    setEndKm(e?.toString() || "");
+    setTotalKm(t?.toString() || "");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeSession.starting_km, routeSession.ending_km, routeSession.total_km, isUnassigned]);
 
   return (
     <tr className="bg-zinc-100 dark:bg-zinc-900 border-y border-border/50">

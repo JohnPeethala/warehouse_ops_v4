@@ -166,19 +166,9 @@ export function RouteGroupHeader({
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Total</span>
-                    <input 
-                      type="number"
-                      className="w-16 px-2 py-1 text-xs border border-slate-300 dark:border-slate-600 rounded bg-slate-100 dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100 hide-spinners outline-none focus:ring-1 focus:ring-slate-400"
-                      value={totalKm}
-                      onChange={(e) => setTotalKm(e.target.value)}
-                      onBlur={() => {
-                        const val = totalKm ? Number(totalKm) : null;
-                        if (val !== routeSession.total_km) {
-                          handleRouteSessionUpdate(group.route, tripDate, { total_km: val });
-                        }
-                      }}
-                      placeholder="---"
-                    />
+                    <div className="w-16 px-2 py-1 text-xs border border-slate-300 dark:border-slate-600 rounded bg-slate-200/50 dark:bg-slate-800/80 font-bold text-slate-900 dark:text-slate-100 min-h-[26px] flex items-center">
+                      {totalKm || "---"}
+                    </div>
                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">KM</span>
                   </div>
                 </div>

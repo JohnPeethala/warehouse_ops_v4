@@ -39,10 +39,13 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
       const merged = { ...log, ...optimisticLogs[log.id] };
       
       const routeStr = merged.route?.toUpperCase() || "";
-      if (routeStr && optimisticSessions[routeStr]) {
+      const dateStr = merged.scheduled_date || "";
+      const sessionKey = `${dateStr}_${routeStr}`;
+      
+      if (routeStr && optimisticSessions[sessionKey]) {
         merged.ops_route_sessions = {
           ...(merged.ops_route_sessions || {}),
-          ...optimisticSessions[routeStr]
+          ...optimisticSessions[sessionKey]
         };
       }
       return merged;
@@ -234,13 +237,14 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
     date: string, 
     updates: Record<string, any>
   ) => {
-    if (!route) return;
+    if (!route || !date) return;
+    const sessionKey = `${date}_${route.toUpperCase()}`;
 
     // Optimistic update
     setOptimisticSessions(prev => ({
       ...prev,
-      [route]: {
-        ...(prev[route] || {}),
+      [sessionKey]: {
+        ...(prev[sessionKey] || {}),
         ...updates
       }
     }));

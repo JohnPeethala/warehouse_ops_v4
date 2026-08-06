@@ -22,11 +22,6 @@ export function RouteGroupHeader({
 }) {
   const { selectedIds, setSelectedIds, handleRouteSessionUpdate } = useScheduleContext();
   
-  // Also track names of assigned GTs to prevent duplicates with the same name from showing up
-  const assignedGtNames = new Set(
-    gtProfiles.filter((p: any) => assignedGtIds.has(p.id)).map((p: any) => p.name)
-  );
-  
   const isUnassigned = !group.route;
   const routeSession = group.tickets[0]?.ops_route_sessions || {};
   const tripDate = group.tickets[0]?.scheduled_date || group.tickets[0]?.created_at;
@@ -119,9 +114,7 @@ export function RouteGroupHeader({
                   <EntityDropdown
                     value={routeSession.gt1_id}
                     onChange={(val) => handleRouteSessionUpdate(group.route, tripDate, { gt1_id: val || null })}
-                    options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => 
-                      (!assignedGtIds.has(o.id) && !assignedGtNames.has(o.label)) || o.id === routeSession.gt1_id
-                    )}
+                    options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt1_id)}
                     placeholder="Select..."
                     onCreateNew={(search) => {
                       onOpenGtModal(search, { route: group.route, date: tripDate, type: 'gt1' });
@@ -133,9 +126,7 @@ export function RouteGroupHeader({
                   <EntityDropdown
                     value={routeSession.gt2_id}
                     onChange={(val) => handleRouteSessionUpdate(group.route, tripDate, { gt2_id: val || null })}
-                    options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => 
-                      (!assignedGtIds.has(o.id) && !assignedGtNames.has(o.label)) || o.id === routeSession.gt2_id
-                    )}
+                    options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt2_id)}
                     placeholder="Select..."
                     onCreateNew={(search) => {
                       onOpenGtModal(search, { route: group.route, date: tripDate, type: 'gt2' });

@@ -33,7 +33,11 @@ export function useScheduleLogic(initialLogs: ScheduleLog[]) {
 
   // 1. Merge optimistic state with server data + added logs
   const data = useMemo(() => {
-    return [...initialLogs, ...addedLogs]
+    const allLogs = [...initialLogs, ...addedLogs];
+    const uniqueMap = new Map();
+    allLogs.forEach(log => uniqueMap.set(log.id, log));
+    
+    return Array.from(uniqueMap.values())
       .filter(log => !deletedIds.has(log.id))
       .map(log => {
       const merged = { ...log, ...optimisticLogs[log.id] };

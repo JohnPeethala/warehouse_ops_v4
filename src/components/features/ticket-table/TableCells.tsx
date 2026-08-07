@@ -4,6 +4,36 @@ import React, { useState, useEffect, useRef } from "react";
 import { Check, AlertTriangle, Star, ChevronUp, ChevronDown } from "lucide-react";
 import { updateAnnotation } from "@/app/actions/annotations";
 import type { SortConfig } from "./types";
+import { createClient } from "@/lib/supabase/client";
+
+let cachedUserName: string | null = null;
+let fetchPromise: Promise<string> | null = null;
+
+const getUserName = async () => {
+  if (cachedUserName) return cachedUserName;
+  if (!fetchPromise) {
+    fetchPromise = (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          cachedUserName = "User";
+          return "User";
+        }
+        const { data: profile } = await supabase
+          .from("core_profiles")
+          .select("name")
+          .eq("id", user.id)
+          .single();
+        cachedUserName = profile?.name || "User";
+        return cachedUserName;
+      } catch (e) {
+        return "User";
+      }
+    })();
+  }
+  return fetchPromise;
+};
 
 export function InteractiveTagInput({ ticketId, stagedTicketId, initialValue, onUpdate }: { ticketId: string, stagedTicketId: string, initialValue: string, onUpdate: (val: string) => void }) {
   const [value, setValue] = useState(initialValue || "");
@@ -79,7 +109,12 @@ export function InteractiveTagInput({ ticketId, stagedTicketId, initialValue, on
 export function AutoResizeTextarea({ ticketId, stagedTicketId, initialValue, onUpdate }: { ticketId: string, stagedTicketId: string, initialValue: string, onUpdate?: (val: string) => void }) {
   const [value, setValue] = useState(initialValue || "");
   const [isFocused, setIsFocused] = useState(false);
+  const [userName, setUserName] = useState("User");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    getUserName().then(setUserName);
+  }, []);
 
   useEffect(() => {
     if (!isFocused) {
@@ -124,7 +159,7 @@ export function AutoResizeTextarea({ ticketId, stagedTicketId, initialValue, onU
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const stamp = `\n[Admin - ${dateStr} ${timeStr}] - `;
+        const stamp = `\n[${userName} - ${dateStr} ${timeStr}] - `;
         
         const el = e.currentTarget;
         if (el.selectionStart === value.length) {
@@ -150,7 +185,7 @@ export function AutoResizeTextarea({ ticketId, stagedTicketId, initialValue, onU
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const stamp = `[Admin - ${dateStr} ${timeStr}] - `;
+      const stamp = `[${userName} - ${dateStr} ${timeStr}] - `;
       
       const el = e.currentTarget;
       const start = el.selectionStart;

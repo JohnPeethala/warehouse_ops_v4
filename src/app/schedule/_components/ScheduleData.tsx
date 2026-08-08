@@ -23,6 +23,8 @@ export async function ScheduleData({ date }: { date?: string }) {
           vehicle_id,
           gt1_id,
           gt2_id,
+          adhoc_gt1,
+          adhoc_gt2,
           trip_date,
           starting_km,
           ending_km,
@@ -37,7 +39,7 @@ export async function ScheduleData({ date }: { date?: string }) {
       .order("scheduled_date", { ascending: false })
       .order("created_at", { ascending: false }),
     supabase.from("cfg_geo_zones").select("*"),
-    supabase.from("core_profiles").select("id, name, role").eq("is_active", true).order("name"),
+    supabase.from("core_profiles").select("id, name, role, created_at").eq("is_active", true).order("name"),
     supabase.from("core_vehicles").select("id, vehicle_no, driver_name").eq("is_active", true).order("vehicle_no"),
     supabase.from("cfg_lookups").select("*").eq("is_active", true)
   ]);

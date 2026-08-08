@@ -536,6 +536,8 @@ export type Database = {
           ending_km: number | null
           gt1_id: string | null
           gt2_id: string | null
+          adhoc_gt1: string | null
+          adhoc_gt2: string | null
           id: string
           not_done_tickets: number | null
           pending_tickets: number | null
@@ -553,6 +555,8 @@ export type Database = {
           ending_km?: number | null
           gt1_id?: string | null
           gt2_id?: string | null
+          adhoc_gt1?: string | null
+          adhoc_gt2?: string | null
           id?: string
           not_done_tickets?: number | null
           pending_tickets?: number | null
@@ -570,6 +574,8 @@ export type Database = {
           ending_km?: number | null
           gt1_id?: string | null
           gt2_id?: string | null
+          adhoc_gt1?: string | null
+          adhoc_gt2?: string | null
           id?: string
           not_done_tickets?: number | null
           pending_tickets?: number | null

@@ -120,22 +120,20 @@ export function ScheduleHeader({
   const handleCopyData = () => {
     const allTickets = filteredGroupedData.flatMap(g => g.tickets);
     
-    const headers = [
-      "Date", "Route", "Driver", "Vehicle No", "GT 1", "GT 2", "Status", "Sub Status", "GT Map Link", "Ops", "Ticket ID", "Name", "Location", "Pincode", "Notes", "Remarks", "Address"
-    ];
-    
     const rows = allTickets.map(t => {
       const session = t.ops_route_sessions || {};
       const vehicle = vehicles.find(v => v.id === session.vehicle_id);
-      const gt1 = profiles.find(p => p.id === session.gt1_id);
-      const gt2 = profiles.find(p => p.id === session.gt2_id);
+      
+      const gt1Name = profiles.find(p => p.id === session.gt1_id)?.name || session.adhoc_gt1 || "";
+      const gt2Name = profiles.find(p => p.id === session.gt2_id)?.name || session.adhoc_gt2 || "";
       const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date), "dd-MMM-yyyy") : "";
 
       return [
         dateStr, t.route || "-", vehicle ? vehicle.driver_name || "" : "", vehicle ? vehicle.vehicle_no || "" : "",
-        gt1?.name || "", gt2?.name || "", t.status || "Pending", t.sub_status || "-", t.gt_map || "", t.sub_category || "Uncategorized",
+        gt1Name, gt2Name, t.status || "Pending", t.sub_status || "-", t.gt_map || "", t.sub_category || "Uncategorized",
         t.ticket_id || "", t.contact_name || "", t.location || "", t.pincode || "",
-        (t.notes || "").replace(/\n/g, " "), (t.remarks || "").replace(/\n/g, " "), (t.address || "").replace(/\n/g, " ")
+        (t.notes || "").replace(/\n/g, " "), (t.remarks || "").replace(/\n/g, " "), (t.address || "").replace(/\n/g, " "),
+        session.starting_km ?? "", session.ending_km ?? "", session.total_km ?? "", session.id || ""
       ].map(cell => {
         const cellStr = String(cell || "");
         if (cellStr.includes("\t") || cellStr.includes("\n") || cellStr.includes("\"")) {
@@ -145,7 +143,7 @@ export function ScheduleHeader({
       }).join("\t");
     });
 
-    const tsv = [headers.join("\t"), ...rows].join("\n");
+    const tsv = rows.join("\n");
     navigator.clipboard.writeText(tsv).then(() => {
       toast.success("Data copied to clipboard!");
     }).catch(() => {

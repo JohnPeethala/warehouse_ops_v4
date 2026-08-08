@@ -57,7 +57,7 @@ export function ReportsManager({ initialData }: Props) {
         headers = [
           "Date", "Route", "Driver", "Vehicle No", "GT 1", "GT 2", "Status", "Sub Status",
           "GT Map Link", "Ops", "Ticket ID", "Name", "Location", "Pincode",
-          "Notes", "Remarks", "Address", "Trip ID (UUID)"
+          "Notes", "Remarks", "Address", "Start KM", "End KM", "Total KM", "Trip ID (UUID)"
         ];
 
         finalRows = tickets.map((t: Record<string, unknown>) => {
@@ -65,20 +65,26 @@ export function ReportsManager({ initialData }: Props) {
           let vehicleNo = "";
           let gt1Name = "";
           let gt2Name = "";
+          let startKm: number | string = "";
+          let endKm: number | string = "";
+          let totalKm: number | string = "";
           let tripId = "";
 
           if (t.ops_route_sessions) {
             const s = t.ops_route_sessions as any;
             tripId = s.id || "";
+            startKm = s.starting_km ?? "";
+            endKm = s.ending_km ?? "";
+            totalKm = s.total_km ?? "";
+            
             const v = vehicles.find(x => x.id === s.vehicle_id);
             if (v) {
               driverName = v.driver_name || "";
               vehicleNo = v.vehicle_no || "";
             }
-            const gt1 = profiles.find(x => x.id === s.gt1_id);
-            if (gt1) gt1Name = gt1.name;
-            const gt2 = profiles.find(x => x.id === s.gt2_id);
-            if (gt2) gt2Name = gt2.name;
+            
+            gt1Name = profiles.find(x => x.id === s.gt1_id)?.name || s.adhoc_gt1 || "";
+            gt2Name = profiles.find(x => x.id === s.gt2_id)?.name || s.adhoc_gt2 || "";
           }
 
           const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date as string), "dd-MMM-yyyy") : "";
@@ -88,7 +94,7 @@ export function ReportsManager({ initialData }: Props) {
             t.status || "Pending", t.sub_status || "", t.gt_map || "", t.sub_category || "Uncategorized",
             t.ticket_id || "", t.contact_name || "", t.location || "", t.pincode || "",
             (t.notes as string || "").replace(/\n/g, " "), (t.remarks as string || "").replace(/\n/g, " "),
-            (t.address as string || "").replace(/\n/g, " "), tripId
+            (t.address as string || "").replace(/\n/g, " "), startKm, endKm, totalKm, tripId
           ];
         });
 
@@ -120,10 +126,8 @@ export function ReportsManager({ initialData }: Props) {
             driverName = v.driver_name || "";
             vehicleNo = v.vehicle_no || "";
           }
-          const gt1 = profiles.find(x => x.id === s.gt1_id);
-          if (gt1) gt1Name = gt1.name;
-          const gt2 = profiles.find(x => x.id === s.gt2_id);
-          if (gt2) gt2Name = gt2.name;
+          gt1Name = profiles.find(x => x.id === s.gt1_id)?.name || s.adhoc_gt1 || "";
+          gt2Name = profiles.find(x => x.id === s.gt2_id)?.name || s.adhoc_gt2 || "";
 
           const dateStr = s.trip_date ? format(new Date(s.trip_date), "dd-MMM-yyyy") : "";
 
@@ -159,7 +163,7 @@ export function ReportsManager({ initialData }: Props) {
       }).join("\t")
     );
 
-    const tsvContent = [data.headers.join("\t"), ...formattedRows].join("\n");
+    const tsvContent = formattedRows.join("\n");
     await navigator.clipboard.writeText(tsvContent);
     toast.success(`Copied report data to clipboard!`);
   };

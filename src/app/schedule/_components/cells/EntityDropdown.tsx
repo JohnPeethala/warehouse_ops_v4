@@ -12,6 +12,8 @@ export const EntityDropdown = ({
   placeholder,
   onCreateNew,
   createNewText = "Create New...",
+  onAddAdhoc,
+  addAdhocText,
   widthClass = "w-full max-w-[200px] min-w-[140px]",
   dropdownWidthClass = "w-[220px]"
 }: {
@@ -21,6 +23,8 @@ export const EntityDropdown = ({
   placeholder: string;
   onCreateNew?: (search: string) => void;
   createNewText?: string;
+  onAddAdhoc?: (search: string) => void;
+  addAdhocText?: string;
   widthClass?: string;
   dropdownWidthClass?: string;
 }) => {
@@ -96,17 +100,31 @@ export const EntityDropdown = ({
               ))}
             </CommandGroup>
           </CommandList>
-          {onCreateNew && (
-            <div className="p-1 border-t border-border">
-              <div 
-                className="text-xs py-1.5 px-2 cursor-pointer text-primary hover:bg-muted font-medium rounded-sm flex items-center justify-between"
-                onClick={() => {
-                  onCreateNew(search);
-                  setOpen(false);
-                }}
-              >
-                {createNewText}
-              </div>
+          {(onCreateNew || onAddAdhoc) && (
+            <div className="p-1 border-t border-border flex flex-col gap-1">
+              {onCreateNew && (
+                <div 
+                  className="text-xs py-1.5 px-2 cursor-pointer text-primary hover:bg-muted font-medium rounded-sm flex items-center justify-between"
+                  onClick={() => {
+                    onCreateNew(search);
+                    setOpen(false);
+                  }}
+                >
+                  {createNewText}
+                </div>
+              )}
+              {onAddAdhoc && search.trim().length > 0 && (
+                <div 
+                  className="text-xs py-1.5 px-2 cursor-pointer text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30 font-medium rounded-sm flex items-center justify-between"
+                  onClick={() => {
+                    onAddAdhoc(search);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  {addAdhocText?.replace('{search}', search)}
+                </div>
+              )}
             </div>
           )}
         </Command>

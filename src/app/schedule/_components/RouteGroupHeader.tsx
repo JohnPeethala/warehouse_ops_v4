@@ -24,7 +24,22 @@ export function RouteGroupHeader({
   
   const isUnassigned = !group.route;
   const routeSession = group.tickets[0]?.ops_route_sessions || {};
-  const tripDate = group.tickets[0]?.scheduled_date || group.tickets[0]?.created_at;
+  const tripDate = group.tickets[0]?.scheduled_date || group.tickets[0]?.created_at?.split("T")[0];
+
+  // We don't need filteredGtProfiles for the ad-hoc approach because ad-hoc names are stored directly on the route session, not in core_profiles!
+  // If you still have temp GTs in core_profiles from previous tests, we can leave this filter to hide them.
+  const filteredGtProfiles = gtProfiles.filter((p: any) => {
+    if (p.name && p.name.endsWith(" *")) {
+      if (!p.created_at) return false;
+      const gtDate = p.created_at.split("T")[0];
+      return gtDate === tripDate;
+    }
+    return true;
+  });
+
+  const toTitleCase = (str: string) => {
+    return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  };
 
   const [startKm, setStartKm] = useState(routeSession.starting_km?.toString() || "");
   const [endKm, setEndKm] = useState(routeSession.ending_km?.toString() || "");
@@ -112,25 +127,53 @@ export function RouteGroupHeader({
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">GT1:</span>
                   <EntityDropdown
-                    value={routeSession.gt1_id}
-                    onChange={(val) => handleRouteSessionUpdate(group.route, tripDate, { gt1_id: val || null })}
-                    options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt1_id)}
+                    value={routeSession.gt1_id || (routeSession.adhoc_gt1 ? 'adhoc1' : '')}
+                    onChange={(val) => {
+                      if (!val) {
+                        handleRouteSessionUpdate(group.route, tripDate, { gt1_id: null, adhoc_gt1: null });
+                      } else {
+                        handleRouteSessionUpdate(group.route, tripDate, { gt1_id: val, adhoc_gt1: null });
+                      }
+                    }}
+                    options={[
+                      ...(routeSession.adhoc_gt1 ? [{ id: 'adhoc1', label: routeSession.adhoc_gt1, badge: 'Temp' }] : []),
+                      ...filteredGtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt1_id)
+                    ]}
                     placeholder="Select..."
                     onCreateNew={(search) => {
                       onOpenGtModal(search, { route: group.route, date: tripDate, type: 'gt1' });
                     }}
+                    onAddAdhoc={(search) => {
+                      const formatted = `${toTitleCase(search)} *`;
+                      handleRouteSessionUpdate(group.route, tripDate, { gt1_id: null, adhoc_gt1: formatted });
+                    }}
+                    addAdhocText="Add '{search}' as Temp GT *"
                   />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">GT2:</span>
                   <EntityDropdown
-                    value={routeSession.gt2_id}
-                    onChange={(val) => handleRouteSessionUpdate(group.route, tripDate, { gt2_id: val || null })}
-                    options={gtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt2_id)}
+                    value={routeSession.gt2_id || (routeSession.adhoc_gt2 ? 'adhoc2' : '')}
+                    onChange={(val) => {
+                      if (!val) {
+                        handleRouteSessionUpdate(group.route, tripDate, { gt2_id: null, adhoc_gt2: null });
+                      } else {
+                        handleRouteSessionUpdate(group.route, tripDate, { gt2_id: val, adhoc_gt2: null });
+                      }
+                    }}
+                    options={[
+                      ...(routeSession.adhoc_gt2 ? [{ id: 'adhoc2', label: routeSession.adhoc_gt2, badge: 'Temp' }] : []),
+                      ...filteredGtProfiles.map((p: any) => ({ id: p.id, label: p.name })).filter((o: any) => !assignedGtIds.has(o.id) || o.id === routeSession.gt2_id)
+                    ]}
                     placeholder="Select..."
                     onCreateNew={(search) => {
                       onOpenGtModal(search, { route: group.route, date: tripDate, type: 'gt2' });
                     }}
+                    onAddAdhoc={(search) => {
+                      const formatted = `${toTitleCase(search)} *`;
+                      handleRouteSessionUpdate(group.route, tripDate, { gt2_id: null, adhoc_gt2: formatted });
+                    }}
+                    addAdhocText="Add '{search}' as Temp GT *"
                   />
                 </div>
                 

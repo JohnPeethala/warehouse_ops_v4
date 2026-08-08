@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { EnrichedTicket, TicketAnnotation, SortConfig } from "../_components/types";
+import type { EnrichedTicket, TicketAnnotation, SortConfig } from "@/components/features/ticket-table/types";
 
 export function useTicketFilters(data: EnrichedTicket[], annotationsMap: Record<string, TicketAnnotation>, selectedIds: Set<string>) {
   const [searchQuery, setSearchQuery] = useState("");

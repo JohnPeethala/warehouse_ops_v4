@@ -31,6 +31,8 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
     const nowUtc = new Date();
     const localNow = new Date(nowUtc.getTime() - timezoneOffsetMin * 60000);
     const todayStr = localNow.toISOString().split("T")[0]; // YYYY-MM-DD
+    const tomorrow = new Date(localNow.getTime() + 24 * 60 * 60 * 1000);
+    const tomorrowStr = toLocalDateStr(tomorrow);
 
     // 1. Total Tickets Count
     const { count: totalTicketsCount, error: stagedCountErr } = await supabase
@@ -59,7 +61,7 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
     // 3. Pending (Total - Scheduled Today)
     const pending = Math.max(0, totalTickets - scheduledToday);
 
-    // 4. Backdated Active Tickets (ops_staged_tickets where date <= yesterdayStr)
+    // 4. Backdated Active Tickets
     const yesterday = new Date(localNow.getTime() - 24 * 60 * 60 * 1000);
     const yesterdayStr = toLocalDateStr(yesterday);
 
@@ -128,26 +130,59 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
       });
     }
 
-    // 7. Dummy Daily Crew Summary
-    const dailyCrewSummary = [
-      {
-        date: "2026-07-20",
-        dateLabel: "Today",
-        crews: [
-          { vehicle: "Van 1", driver: "Alice", gt1: "GT-A", gt2: "", total: 15, done: 10, pending: 5, notDone: 0, km: 45 },
-          { vehicle: "Truck A", driver: "Bob", gt1: "GT-B", gt2: "GT-C", total: 20, done: 15, pending: 3, notDone: 2, km: 120 }
-        ]
-      },
-      {
-        date: "2026-07-19",
-        dateLabel: "Yesterday",
-        crews: [
-          { vehicle: "Van 1", driver: "Alice", gt1: "GT-A", gt2: "", total: 18, done: 18, pending: 0, notDone: 0, km: 50 },
-          { vehicle: "Truck A", driver: "Bob", gt1: "GT-B", gt2: "GT-C", total: 22, done: 20, pending: 0, notDone: 2, km: 110 },
-          { vehicle: "Van 2", driver: "Charlie", gt1: "GT-D", gt2: "", total: 10, done: 9, pending: 0, notDone: 1, km: 30 }
-        ]
-      }
-    ];
+    // 7. Dynamic Daily Crew Summary (Last 1 week data)
+    const oneWeekAgo = new Date(localNow);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
+    const oneWeekAgoStr = toLocalDateStr(oneWeekAgo);
+
+    const { data: routeSessions, error: routeSessionsErr } = await supabase
+      .from("ops_route_sessions")
+      .select(`
+        *,
+        core_vehicles!ops_route_sessions_vehicle_id_fkey ( vehicle_no, driver_name ),
+        gt1:core_profiles!ops_route_sessions_gt1_id_fkey ( name ),
+        gt2:core_profiles!ops_route_sessions_gt2_id_fkey ( name )
+      `)
+      .gte("trip_date", oneWeekAgoStr)
+      .order("trip_date", { ascending: false });
+
+    if (routeSessionsErr) {
+      console.error("Failed to fetch ops_route_sessions:", routeSessionsErr);
+    }
+
+    const groupedSessions: Record<string, any[]> = {};
+    if (routeSessions) {
+      routeSessions.forEach((s: any) => {
+        const d = s.trip_date;
+        if (!groupedSessions[d]) {
+          groupedSessions[d] = [];
+        }
+        groupedSessions[d].push({
+          vehicle: s.core_vehicles?.vehicle_no || "-",
+          driver: s.core_vehicles?.driver_name || "-",
+          gt1: s.gt1?.name || "-",
+          gt2: s.gt2?.name || "",
+          total: s.total_tickets || 0,
+          done: s.done_tickets || 0,
+          pending: s.pending_tickets || 0,
+          notDone: s.not_done_tickets || 0,
+          km: s.total_km || 0
+        });
+      });
+    }
+
+    const dailyCrewSummary = Object.entries(groupedSessions)
+      .map(([date, crews]) => {
+        const parsed = new Date(date);
+        const dateLabel = parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        
+        let relativeLabel = null;
+        if (date === todayStr) relativeLabel = "Today";
+        if (date === tomorrowStr) relativeLabel = "Tomorrow";
+
+        return { date, dateLabel, relativeLabel, crews };
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
 
     return {
       funnel: {

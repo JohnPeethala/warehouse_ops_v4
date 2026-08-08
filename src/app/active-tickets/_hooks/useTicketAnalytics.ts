@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { EnrichedTicket, TicketAnnotation } from "../_components/types";
+import type { EnrichedTicket, TicketAnnotation } from "@/components/features/ticket-table/types";
 
 export function useTicketAnalytics(data: EnrichedTicket[], filteredData: EnrichedTicket[], annotationsMap: Record<string, TicketAnnotation>) {
   const latestBatchTicket = useMemo(() => {

@@ -37,7 +37,7 @@ export async function createGTAction(name: string, phone: string) {
     let formattedName = formatName(name);
     const gtName = formattedName.startsWith('GT ') ? formattedName : `GT ${formattedName}`;
 
-    const dummyEmail = `${phone.replace(/[^0-9]/g, '')}@gt.warehouse.com`
+    const dummyEmail = `${phone.replace(/[^0-9]/g, '')}@warehouse.com`
     const password = "123456" // Supabase requires min 6 characters by default
 
     // 1. Create auth user

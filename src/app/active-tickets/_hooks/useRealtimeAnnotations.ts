@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { TicketAnnotation } from "../_components/types";
+import type { TicketAnnotation, EnrichedTicket } from "@/components/features/ticket-table/types";
 
 export function useRealtimeAnnotations() {
   const [annotationsMap, setAnnotationsMap] = useState<Record<string, TicketAnnotation>>({});

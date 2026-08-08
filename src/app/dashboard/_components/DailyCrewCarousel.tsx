@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Camera, Truck } from "lucide-react";
+import { ChevronLeft, ChevronRight, Truck, Users } from "lucide-react";
 
 export function DailyCrewCarousel({ days }: { days: any[] }) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -57,14 +57,16 @@ function CrewDayCard({ day, i, total, done, pending, notDone, donePerVehicle }: 
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0, transition: { delay: i * 0.06, duration: 0.35 } }}
-      className="flex-none w-[390px] rounded-xl border border-border bg-card shadow-sm overflow-hidden"
+      className="flex-none w-[390px] h-[512px] flex flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden"
     >
       {/* Card Header */}
       <div className="px-5 py-3 flex items-center justify-between bg-muted/40 border-b border-border">
         <p className="text-sm font-black tracking-tight text-foreground">{day.dateLabel}</p>
-        <button title="Capture card" className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-          <Camera size={13} />
-        </button>
+        {day.relativeLabel && (
+          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold uppercase tracking-widest">
+            {day.relativeLabel}
+          </span>
+        )}
       </div>
       {/* Stats Row */}
       <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-muted/20">
@@ -89,23 +91,21 @@ function CrewDayCard({ day, i, total, done, pending, notDone, donePerVehicle }: 
       </div>
 
       {/* Crew Rows */}
-      <div className="divide-y divide-border/40">
+      <div className="divide-y divide-border/40 flex-1 overflow-y-auto custom-scrollbar">
         {day.crews.map((crew: any, ci: number) => (
           <div key={ci} className="px-5 py-3 hover:bg-muted/20 transition-colors">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Truck size={12} className="text-muted-foreground shrink-0" />
-                  <span className="text-xs font-black text-foreground truncate">{crew.vehicle}</span>
-                  {crew.km > 0 && (
-                    <span className="ml-auto text-xs font-bold text-muted-foreground shrink-0">{crew.km} km</span>
-                  )}
+                  <Users size={12} className="text-muted-foreground shrink-0" />
+                  <span className="text-xs font-black text-foreground truncate">
+                    {[crew.gt1, crew.gt2].filter(Boolean).join(" · ") || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-muted-foreground leading-snug">
                   <span className="truncate col-span-2"><span className="font-semibold text-foreground/80">Driver:</span> {crew.driver || "—"}</span>
                   <span className="truncate col-span-2">
-                    <span className="font-semibold text-foreground/80">GT:</span>{" "}
-                    {[crew.gt1, crew.gt2].filter(Boolean).join(" · ") || "—"}
+                    <span className="font-semibold text-foreground/80">Vehicle:</span> {crew.vehicle || "—"}
                   </span>
                 </div>
               </div>
@@ -117,6 +117,19 @@ function CrewDayCard({ day, i, total, done, pending, notDone, donePerVehicle }: 
                   <span className="text-amber-500">{crew.pending}</span>
                   {crew.notDone > 0 && <><span className="text-muted-foreground/30">/</span><span className="text-rose-500">{crew.notDone}</span></>}
                 </div>
+                {crew.km > 0 ? (
+                  <span className={`mt-1 px-2 py-0.5 rounded-full border text-[9px] uppercase tracking-wider font-bold ${
+                    crew.km > 100
+                      ? "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
+                      : "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400"
+                  }`}>
+                    {crew.km} km
+                  </span>
+                ) : (
+                  <span className="mt-1 px-2 py-0.5 rounded-full border border-border bg-muted/30 text-[9px] uppercase tracking-wider font-bold text-muted-foreground opacity-0">
+                    — km
+                  </span>
+                )}
               </div>
             </div>
           </div>

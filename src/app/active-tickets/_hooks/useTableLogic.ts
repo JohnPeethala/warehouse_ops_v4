@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import type { EnrichedTicket } from "../_components/types";
+import type { EnrichedTicket } from "@/components/features/ticket-table/types";
 import { useRealtimeAnnotations } from "./useRealtimeAnnotations";
 import { useRealtimeGeoZones } from "./useRealtimeGeoZones";
 import { useTicketFilters } from "./useTicketFilters";

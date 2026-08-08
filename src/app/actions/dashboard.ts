@@ -21,6 +21,9 @@ export type DashboardData = {
   funnel: DashboardFunnel;
   subCategorySplit: SubCategorySplit;
   futureSchedule: any[];
+  stagedTickets: any[];
+  dailyCrewSummary: any[];
+  historicalCompletion: any[];
 };
 
 export async function getDashboardData(timezoneOffsetMin = -330): Promise<DashboardData> {
@@ -130,10 +133,10 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
       });
     }
 
-    // 7. Dynamic Daily Crew Summary (Last 1 week data)
-    const oneWeekAgo = new Date(localNow);
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
-    const oneWeekAgoStr = toLocalDateStr(oneWeekAgo);
+    // 7. Dynamic Daily Crew Summary & Historical Completion (Last 30 days, up to yesterday)
+    const thirtyDaysAgo = new Date(localNow);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoStr = toLocalDateStr(thirtyDaysAgo);
 
     const { data: routeSessions, error: routeSessionsErr } = await supabase
       .from("ops_route_sessions")
@@ -143,17 +146,37 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
         gt1:core_profiles!ops_route_sessions_gt1_id_fkey ( name ),
         gt2:core_profiles!ops_route_sessions_gt2_id_fkey ( name )
       `)
-      .gte("trip_date", oneWeekAgoStr)
+      .gte("trip_date", thirtyDaysAgoStr)
+      .lte("trip_date", yesterdayStr)
       .order("trip_date", { ascending: false });
 
     if (routeSessionsErr) {
       console.error("Failed to fetch ops_route_sessions:", routeSessionsErr);
     }
 
+    const histMap: Record<string, any> = {};
+    for (let i = 30; i >= 1; i--) {
+      const d = new Date(localNow);
+      d.setDate(d.getDate() - i);
+      const ds = toLocalDateStr(d);
+      histMap[ds] = { success: 0, pending: 0, notDone: 0, total: 0, vehicles: new Set() };
+    }
+
     const groupedSessions: Record<string, any[]> = {};
     if (routeSessions) {
       routeSessions.forEach((s: any) => {
         const d = s.trip_date;
+
+        // Populate historical map
+        if (histMap[d]) {
+          histMap[d].success += s.done_tickets || 0;
+          histMap[d].pending += s.pending_tickets || 0;
+          histMap[d].notDone += s.not_done_tickets || 0;
+          histMap[d].total += s.total_tickets || 0;
+          if (s.vehicle_id) histMap[d].vehicles.add(s.vehicle_id);
+        }
+
+        // Group sessions for Daily Crew
         if (!groupedSessions[d]) {
           groupedSessions[d] = [];
         }
@@ -171,14 +194,34 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
       });
     }
 
+    const historicalCompletion = Object.entries(histMap).map(([date, stats]) => {
+      const uniqueVehicles = stats.vehicles.size;
+      const dateObj = new Date(date);
+      const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+      return {
+        date: formattedDate,
+        success: stats.success,
+        pending: stats.pending,
+        notDone: stats.notDone,
+        total: stats.total,
+        vehicles: uniqueVehicles,
+        tasksPerVehicle: uniqueVehicles > 0 ? Number((stats.success / uniqueVehicles).toFixed(1)) : 0
+      };
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const sevenDaysAgo = new Date(localNow);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = toLocalDateStr(sevenDaysAgo);
+
     const dailyCrewSummary = Object.entries(groupedSessions)
+      .filter(([date]) => date >= sevenDaysAgoStr && date <= yesterdayStr)
       .map(([date, crews]) => {
         const parsed = new Date(date);
         const dateLabel = parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" });
         
         let relativeLabel = null;
-        if (date === todayStr) relativeLabel = "Today";
-        if (date === tomorrowStr) relativeLabel = "Tomorrow";
+        if (date === yesterdayStr) relativeLabel = "Yesterday";
 
         return { date, dateLabel, relativeLabel, crews };
       })
@@ -194,7 +237,8 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
       subCategorySplit,
       futureSchedule,
       stagedTickets: stagedTickets || [],
-      dailyCrewSummary
+      dailyCrewSummary,
+      historicalCompletion
     };
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
@@ -208,7 +252,8 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
       subCategorySplit: [],
       futureSchedule: [],
       stagedTickets: [],
-      dailyCrewSummary: []
+      dailyCrewSummary: [],
+      historicalCompletion: []
     };
   }
 }

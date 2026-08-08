@@ -57,7 +57,7 @@ function CrewDayCard({ day, i, total, done, pending, notDone, donePerVehicle }: 
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0, transition: { delay: i * 0.06, duration: 0.35 } }}
-      className="flex-none w-[390px] h-[512px] flex flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden"
+      className="flex-none w-[390px] flex flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden"
     >
       {/* Card Header */}
       <div className="px-5 py-3 flex items-center justify-between bg-muted/40 border-b border-border">
@@ -79,11 +79,9 @@ function CrewDayCard({ day, i, total, done, pending, notDone, donePerVehicle }: 
           <span className="text-xl font-black text-emerald-600 leading-tight">{donePerVehicle}</span>
         </div>
         <div className="px-4 py-2.5 flex flex-col">
-          <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Done / Pend / ND</span>
-          <div className="flex items-baseline gap-1 mt-0.5">
+          <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Done / Not Done</span>
+          <div className="flex items-baseline gap-1 mt-0.5 uppercase">
             <span className="text-xl font-black text-emerald-600 leading-tight">{done}</span>
-            <span className="text-muted-foreground/40 text-sm">/</span>
-            <span className="text-xl font-black text-amber-500 leading-tight">{pending}</span>
             <span className="text-muted-foreground/40 text-sm">/</span>
             <span className="text-xl font-black text-rose-500 leading-tight">{notDone}</span>
           </div>
@@ -111,11 +109,10 @@ function CrewDayCard({ day, i, total, done, pending, notDone, donePerVehicle }: 
               </div>
               <div className="flex flex-col items-end gap-1 shrink-0">
                 <span className="text-sm font-black text-foreground">{crew.total}</span>
-                <div className="flex gap-1 text-xs font-bold">
+                <div className="flex gap-1 text-xs font-bold uppercase">
                   <span className="text-emerald-500">{crew.done}</span>
                   <span className="text-muted-foreground/30">/</span>
-                  <span className="text-amber-500">{crew.pending}</span>
-                  {crew.notDone > 0 && <><span className="text-muted-foreground/30">/</span><span className="text-rose-500">{crew.notDone}</span></>}
+                  <span className="text-rose-500">{crew.notDone}</span>
                 </div>
                 {crew.km > 0 ? (
                   <span className={`mt-1 px-2 py-0.5 rounded-full border text-[9px] uppercase tracking-wider font-bold ${

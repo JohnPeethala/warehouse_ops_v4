@@ -8,6 +8,7 @@ import { KpiSection } from "./KpiSection";
 import { TicketCompositionChart } from "./TicketCompositionChart";
 import { TrendChart } from "./TrendChart";
 import { DailyCrewCarousel } from "./DailyCrewCarousel";
+import { HistoricalTrendChart } from "./HistoricalTrendChart";
 
 const staggerContainer = {
   initial: {},
@@ -23,12 +24,14 @@ export function DashboardClient({
   funnel, 
   subCategorySplit, 
   futureSchedule,
-  dailyCrewSummary 
+  dailyCrewSummary,
+  historicalCompletion
 }: { 
   funnel: DashboardFunnel; 
   subCategorySplit: SubCategorySplit[]; 
   futureSchedule: any[];
   dailyCrewSummary: any[];
+  historicalCompletion: any[];
 }) {
   const [activeTab, setActiveTab] = useState<"overview" | "team">("overview");
 
@@ -89,6 +92,12 @@ export function DashboardClient({
           {activeTab === "overview" && dailyCrewSummary && dailyCrewSummary.length > 0 && (
             <motion.div {...fadeUp(0.2)} className="mt-6">
               <DailyCrewCarousel days={dailyCrewSummary} />
+            </motion.div>
+          )}
+
+          {activeTab === "overview" && historicalCompletion && historicalCompletion.length > 0 && (
+            <motion.div {...fadeUp(0.25)}>
+              <HistoricalTrendChart historicalCompletion={historicalCompletion} />
             </motion.div>
           )}
 

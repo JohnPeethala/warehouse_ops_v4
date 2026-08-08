@@ -21,7 +21,10 @@ export async function fetchRouteSessionsData(startDate: string, endDate: string)
       total_tickets,
       done_tickets,
       not_done_tickets,
-      pending_tickets
+      pending_tickets,
+      adhoc_gt1,
+      adhoc_gt2,
+      route_name
     `)
     .gte("trip_date", startDate)
     .lte("trip_date", endDate)

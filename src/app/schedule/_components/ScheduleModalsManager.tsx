@@ -55,6 +55,9 @@ export function ScheduleModalsManager({
         onClose={() => setIsProgressModalOpen(false)} 
         date={logs[0]?.scheduled_date || ""} 
         tickets={filteredGroupedData.flatMap(g => g.tickets)} 
+        vehicles={vehicles}
+        profiles={profiles}
+        subCategories={subCategories}
       />
 
       <NotDoneSummaryModal 

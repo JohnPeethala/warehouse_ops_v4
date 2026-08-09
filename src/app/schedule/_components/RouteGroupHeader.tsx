@@ -111,17 +111,29 @@ export function RouteGroupHeader({
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase">Vehicle/Driver:</span>
                   <EntityDropdown
-                    value={routeSession.vehicle_id}
+                    value={routeSession.vehicle_id || (routeSession.adhoc_vehicle ? 'adhoc_vehicle' : '')}
                     onChange={(val) => {
-                      handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: val || null });
+                      if (!val) {
+                        handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: null, adhoc_vehicle: null });
+                      } else {
+                        handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: val, adhoc_vehicle: null });
+                      }
                     }}
-                    options={vehicleDriverOptions.filter((o: any) => !assignedVehicleIds.has(o.id) || o.id === routeSession.vehicle_id)}
+                    options={[
+                      ...(routeSession.adhoc_vehicle ? [{ id: 'adhoc_vehicle', label: routeSession.adhoc_vehicle, badge: 'Temp' }] : []),
+                      ...vehicleDriverOptions.filter((o: any) => !assignedVehicleIds.has(o.id) || o.id === routeSession.vehicle_id)
+                    ]}
                     placeholder="Select..."
-                    widthClass="w-[280px]"
-                    dropdownWidthClass="w-[280px]"
+                    widthClass="w-[160px]"
+                    dropdownWidthClass="w-[160px]"
                     onCreateNew={(search) => {
                       onOpenVehicleModal(search, { route: group.route, date: tripDate, type: 'vehicle' });
                     }}
+                    onAddAdhoc={(search) => {
+                      const formatted = `${toTitleCase(search)} *`;
+                      handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: null, adhoc_vehicle: formatted });
+                    }}
+                    addAdhocText="Add '{search}' as Temp Driver *"
                   />
                 </div>
                 <div className="flex items-center gap-2">

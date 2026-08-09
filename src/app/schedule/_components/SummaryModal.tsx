@@ -16,16 +16,10 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
   const [copySuccess, setCopySuccess] = useState(false);
   const [summaryTitle, setSummaryTitle] = useState("SCHEDULE SUMMARY");
   const spreadsheetRef = useRef<HTMLDivElement>(null);
-
   // Overrides for editing
-  const [totalTicketsOverride, setTotalTicketsOverride] = useState<string>("");
   const [opsOverrides, setOpsOverrides] = useState<Record<string, string>>({});
 
   const totalVehicles = (Number(regularCount) || 0) + (Number(adhocCount) || 0);
-  const baseTotalTickets = tickets.length;
-  const activeTotalTickets = totalTicketsOverride !== "" ? Number(totalTicketsOverride) : baseTotalTickets;
-  const ticketsPerVehicle = totalVehicles > 0 ? (activeTotalTickets / totalVehicles).toFixed(1) : '0.0';
-  const totalPending = tickets.filter(t => t.status === 'Pending').length;
 
   // Dynamic category grouping with custom sorting
   const subCategoryCounts: Record<string, number> = {};
@@ -46,6 +40,15 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
     if (rankDiff !== 0) return rankDiff;
     return b[1] - a[1]; // sort by count descending for rest
   });
+
+  let activeTotalTickets = 0;
+  sortedCategories.forEach(([cat, count]) => {
+      const activeCount = opsOverrides[cat] !== undefined && opsOverrides[cat] !== "" ? Number(opsOverrides[cat]) : count;
+      activeTotalTickets += activeCount;
+  });
+
+  const ticketsPerVehicle = totalVehicles > 0 ? (activeTotalTickets / totalVehicles).toFixed(1) : '0.0';
+  const totalPending = tickets.filter(t => t.status === 'Pending').length;
 
   const formattedDate = date ? new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No Date Selected';
 
@@ -142,16 +145,7 @@ export function SummaryModal({ isOpen, onClose, date, tickets }: SummaryModalPro
                 <div>
                   <div className="flex justify-between items-end mb-3 pb-2 border-b border-gray-200">
                     <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Total Tickets</span>
-                    {isCopying ? (
-                      <span className="text-2xl font-black text-gray-900 leading-none">{activeTotalTickets}</span>
-                    ) : (
-                      <input 
-                        type="number"
-                        className="w-20 text-right bg-transparent text-2xl font-black text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none hide-spinners p-0 m-0 h-6"
-                        value={totalTicketsOverride !== "" ? totalTicketsOverride : baseTotalTickets}
-                        onChange={(e) => setTotalTicketsOverride(e.target.value)}
-                      />
-                    )}
+                    <span className="text-2xl font-black text-gray-900 leading-none">{activeTotalTickets}</span>
                   </div>
                   
                   <div className="space-y-2.5 pt-1 pl-3 border-l border-gray-200 ml-1">

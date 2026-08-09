@@ -78,7 +78,10 @@ export function ReportsManager({ initialData }: Props) {
             totalKm = s.total_km ?? "";
             
             const v = vehicles.find(x => x.id === s.vehicle_id);
-            if (v) {
+            if (s.adhoc_vehicle) {
+              driverName = s.adhoc_vehicle as string;
+              vehicleNo = "Temp Vehicle";
+            } else if (v) {
               driverName = v.driver_name || "";
               vehicleNo = v.vehicle_no || "";
             }
@@ -122,17 +125,23 @@ export function ReportsManager({ initialData }: Props) {
           let gt2Name = "";
 
           const v = vehicles.find(x => x.id === s.vehicle_id);
-          if (v) {
+          if (s.adhoc_vehicle) {
+            driverName = s.adhoc_vehicle as string;
+            vehicleNo = "Temp Vehicle";
+          } else if (v) {
             driverName = v.driver_name || "";
             vehicleNo = v.vehicle_no || "";
           }
           gt1Name = profiles.find(x => x.id === s.gt1_id)?.name || s.adhoc_gt1 || "";
           gt2Name = profiles.find(x => x.id === s.gt2_id)?.name || s.adhoc_gt2 || "";
 
-          const dateStr = s.trip_date ? format(new Date(s.trip_date), "dd-MMM-yyyy") : "";
+          const dateStr = s.trip_date ? format(new Date(s.trip_date as string), "dd-MMM-yyyy") : "";
+
+          const logArr = s.ops_dispatch_log as any[];
+          const routeName = (logArr && logArr.length > 0) ? logArr[0].route : "-";
 
           return [
-            dateStr, s.route_name || "-", vehicleNo, driverName, gt1Name, gt2Name,
+            dateStr, routeName || "-", vehicleNo, driverName, gt1Name, gt2Name,
             s.starting_km ?? "-", s.ending_km ?? "-", s.total_km ?? "-",
             s.total_tickets || 0, s.done_tickets || 0, s.not_done_tickets || 0, s.pending_tickets || 0,
             s.id || ""

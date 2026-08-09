@@ -183,8 +183,8 @@ export async function getDashboardData(timezoneOffsetMin = -330): Promise<Dashbo
         groupedSessions[d].push({
           vehicle: s.core_vehicles?.vehicle_no || "-",
           driver: s.core_vehicles?.driver_name || "-",
-          gt1: s.gt1?.name || "-",
-          gt2: s.gt2?.name || "",
+          gt1: s.gt1?.name || s.adhoc_gt1 || "-",
+          gt2: s.gt2?.name || s.adhoc_gt2 || "",
           total: s.total_tickets || 0,
           done: s.done_tickets || 0,
           pending: s.pending_tickets || 0,

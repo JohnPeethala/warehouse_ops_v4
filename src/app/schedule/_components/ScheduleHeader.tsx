@@ -45,6 +45,7 @@ export function ScheduleHeader({
     selectedIds,
     filteredGroupedData
   } = useScheduleContext();
+  const [showCopyMenu, setShowCopyMenu] = React.useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -117,38 +118,96 @@ export function ScheduleHeader({
     setColFilters({});
   };
 
-  const handleCopyData = () => {
-    const allTickets = filteredGroupedData.flatMap(g => g.tickets);
+  const handleCopyData = (mode: 'tickets' | 'sessions') => {
+    setShowCopyMenu(false);
+    let sourceTickets = filteredGroupedData.flatMap(g => g.tickets);
+    if (selectedIds.size > 0) {
+      sourceTickets = sourceTickets.filter(t => selectedIds.has(t.id));
+    }
     
-    const rows = allTickets.map(t => {
-      const session = t.ops_route_sessions || {};
-      const vehicle = vehicles.find(v => v.id === session.vehicle_id);
-      
-      const gt1Name = profiles.find(p => p.id === session.gt1_id)?.name || session.adhoc_gt1 || "";
-      const gt2Name = profiles.find(p => p.id === session.gt2_id)?.name || session.adhoc_gt2 || "";
-      const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date), "dd-MMM-yyyy") : "";
+    if (mode === 'tickets') {
+      const rows = sourceTickets.map(t => {
+        const session = t.ops_route_sessions || {};
+        const vehicle = vehicles.find(v => v.id === session.vehicle_id);
+        
+        const gt1Name = profiles.find(p => p.id === session.gt1_id)?.name || session.adhoc_gt1 || "";
+        const gt2Name = profiles.find(p => p.id === session.gt2_id)?.name || session.adhoc_gt2 || "";
+        const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date), "dd-MMM-yyyy") : "";
 
-      return [
-        dateStr, t.route || "-", vehicle ? vehicle.driver_name || "" : "", vehicle ? vehicle.vehicle_no || "" : "",
-        gt1Name, gt2Name, t.status || "Pending", t.sub_status || "-", t.gt_map || "", t.sub_category || "Uncategorized",
-        t.ticket_id || "", t.contact_name || "", t.location || "", t.pincode || "",
-        (t.notes || "").replace(/\n/g, " "), (t.remarks || "").replace(/\n/g, " "), (t.address || "").replace(/\n/g, " "),
-        session.starting_km ?? "", session.ending_km ?? "", session.total_km ?? "", session.id || ""
-      ].map(cell => {
-        const cellStr = String(cell || "");
-        if (cellStr.includes("\t") || cellStr.includes("\n") || cellStr.includes("\"")) {
-          return `"${cellStr.replace(/"/g, '""')}"`;
+        const driverNameStr = session.adhoc_vehicle || (vehicle ? vehicle.driver_name || "" : "");
+        const vehicleNoStr = session.adhoc_vehicle ? "Temp Vehicle" : (vehicle ? vehicle.vehicle_no || "" : "");
+
+        return [
+          dateStr, t.route || "-", driverNameStr, vehicleNoStr,
+          gt1Name, gt2Name, t.status || "Pending", t.sub_status || "-", t.gt_map || "", t.sub_category || "Uncategorized",
+          t.ticket_id || "", t.contact_name || "", t.location || "", t.pincode || "",
+          (t.notes || "").replace(/\n/g, " "), (t.remarks || "").replace(/\n/g, " "), (t.address || "").replace(/\n/g, " "),
+          session.starting_km ?? "", session.ending_km ?? "", session.total_km ?? "", session.id || ""
+        ].map(cell => {
+          const cellStr = String(cell || "");
+          if (cellStr.includes("\t") || cellStr.includes("\n") || cellStr.includes("\"")) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join("\t");
+      });
+
+      const tsv = rows.join("\n");
+      navigator.clipboard.writeText(tsv).then(() => {
+        toast.success("Dispatch log copied to clipboard!");
+      }).catch(() => {
+        toast.error("Failed to copy data");
+      });
+    } else {
+      const sessionsMap = new Map();
+      sourceTickets.forEach(t => {
+        const session = t.ops_route_sessions;
+        if (session && session.id && !sessionsMap.has(session.id)) {
+          sessionsMap.set(session.id, { ...session, route_name: t.route || "-" });
         }
-        return cellStr;
-      }).join("\t");
-    });
+      });
+      
+      const uniqueSessions = Array.from(sessionsMap.values());
+      const rows = uniqueSessions.map(session => {
+        const vehicle = vehicles.find(v => v.id === session.vehicle_id);
+        const gt1Name = profiles.find(p => p.id === session.gt1_id)?.name || session.adhoc_gt1 || "";
+        const gt2Name = profiles.find(p => p.id === session.gt2_id)?.name || session.adhoc_gt2 || "";
+        const dateStr = session.trip_date ? format(new Date(session.trip_date), "dd-MMM-yyyy") : "";
+        const driverNameStr = session.adhoc_vehicle || (vehicle ? vehicle.driver_name || "" : "");
+        const vehicleNoStr = session.adhoc_vehicle ? "Temp Vehicle" : (vehicle ? vehicle.vehicle_no || "" : "");
+        
+        return [
+          dateStr, 
+          session.route_name,
+          vehicleNoStr, 
+          driverNameStr, 
+          gt1Name, 
+          gt2Name, 
+          session.starting_km ?? "", 
+          session.ending_km ?? "", 
+          session.total_km ?? "", 
+          session.total_tickets || "0", 
+          session.done_tickets || "0", 
+          session.not_done_tickets || "0",
+          session.pending_tickets || "0",
+          session.id
 
-    const tsv = rows.join("\n");
-    navigator.clipboard.writeText(tsv).then(() => {
-      toast.success("Data copied to clipboard!");
-    }).catch(() => {
-      toast.error("Failed to copy data");
-    });
+        ].map(cell => {
+          const cellStr = String(cell || "");
+          if (cellStr.includes("\t") || cellStr.includes("\n") || cellStr.includes("\"")) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join("\t");
+      });
+
+      const tsv = rows.join("\n");
+      navigator.clipboard.writeText(tsv).then(() => {
+        toast.success("Route Sessions copied to clipboard!");
+      }).catch(() => {
+        toast.error("Failed to copy sessions");
+      });
+    }
   };
 
   return (
@@ -271,13 +330,7 @@ export function ScheduleHeader({
                     <FileBarChart2 size={16} className="text-emerald-500 shrink-0" />
                     Schedule
                   </button>
-                  <button 
-                    onClick={() => { setIsNotDoneModalOpen(true); setIsReportsOpen(false); }}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-muted text-foreground text-left w-full"
-                  >
-                    <AlertCircle size={16} className="text-red-500 shrink-0" />
-                    Not Done
-                  </button>
+
                   <button 
                     onClick={() => { setIsProgressModalOpen(true); setIsReportsOpen(false); }}
                     className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-muted text-foreground text-left w-full"
@@ -297,14 +350,32 @@ export function ScheduleHeader({
             <Plus size={16} />
             Add Tickets
           </button>
-          <button 
-            onClick={() => handleCopyData()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap border border-border bg-background hover:bg-muted text-foreground"
-            title="Copy displayed tickets to clipboard"
-          >
-            <Copy size={16} />
-            Copy
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowCopyMenu(!showCopyMenu)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap border border-border bg-background hover:bg-muted text-foreground"
+              title="Copy options"
+            >
+              <Copy size={16} />
+              Copy <ChevronDown size={14} />
+            </button>
+
+            {showCopyMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowCopyMenu(false)} />
+                <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden flex flex-col p-1">
+                  <button onClick={() => handleCopyData('tickets')} className="flex flex-col gap-0.5 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-left w-full text-foreground group">
+                    <span className="font-semibold flex items-center gap-2"><FileBarChart2 size={14}/> Dispatch Log</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight group-hover:text-foreground transition-colors">Row by row ticket details</span>
+                  </button>
+                  <button onClick={() => handleCopyData('sessions')} className="flex flex-col gap-0.5 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-left w-full text-foreground group mt-1">
+                    <span className="font-semibold flex items-center gap-2"><Activity size={14}/> Route Sessions</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight group-hover:text-foreground transition-colors">Trip overview by route</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>,
         headerEl
       )}

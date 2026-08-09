@@ -81,7 +81,7 @@ export function HistoricalTrendChart({ historicalCompletion }: { historicalCompl
         
         <div className="h-[260px] w-full mt-2">
           <ResponsiveContainer>
-            <AreaChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 35, right: 20, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorSuccess" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
@@ -93,8 +93,8 @@ export function HistoricalTrendChart({ historicalCompletion }: { historicalCompl
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-              <XAxis dataKey="date" axisLine={{ stroke: "currentColor", opacity: 0.5 }} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor', opacity: 0.7 }} dy={10} />
-              <YAxis axisLine={{ stroke: "currentColor", opacity: 0.5 }} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor', opacity: 0.7 }} />
+              <XAxis dataKey="date" padding={{ left: 20, right: 20 }} axisLine={{ stroke: "currentColor", opacity: 0.5 }} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor', opacity: 0.7 }} dy={10} />
+              <YAxis hide={true} axisLine={{ stroke: "currentColor", opacity: 0.5 }} tickLine={false} tick={{ fontSize: 12, fill: 'currentColor', opacity: 0.7 }} />
               <RechartsTooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ stroke: 'currentColor', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.3 }} />
               <Area type="monotone" dataKey="success" name="Done" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSuccess)" label={{ fill: 'currentColor', fontSize: 13, fontWeight: 'bold', position: 'top', offset: 12 }} dot={{ r: 4, fill: 'currentColor', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#10b981', stroke: 'currentColor', strokeWidth: 2 }} />
               <Area type="monotone" dataKey="notDone" name="Not Done" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorNotDone)" label={{ fill: 'currentColor', fontSize: 13, fontWeight: 'bold', position: 'top', offset: 12 }} dot={{ r: 4, fill: 'currentColor', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#f43f5e', stroke: 'currentColor', strokeWidth: 2 }} />

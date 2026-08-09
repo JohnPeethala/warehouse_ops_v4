@@ -24,7 +24,7 @@ export async function fetchRouteSessionsData(startDate: string, endDate: string)
       pending_tickets,
       adhoc_gt1,
       adhoc_gt2,
-      route_name
+      ops_dispatch_log(route)
     `)
     .gte("trip_date", startDate)
     .lte("trip_date", endDate)

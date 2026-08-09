@@ -89,8 +89,20 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets, vehicles,
   const vendorGroups = driverVehicleIssues.reduce((acc, t) => {
     const session = t.ops_route_sessions || {};
     const vehicle = vehicles.find(v => v.id === session.vehicle_id);
-    const driverName = session.adhoc_vehicle ? session.adhoc_vehicle : (vehicle ? vehicle.driver_name : 'Unassigned Driver');
-    const vehicleNo = session.adhoc_vehicle ? 'Temp Vehicle' : (vehicle ? vehicle.vehicle_no : 'Unknown Vehicle');
+    let driverName = vehicle ? vehicle.driver_name : 'Unassigned Driver';
+    let vehicleNo = vehicle ? vehicle.vehicle_no : 'Unknown Vehicle';
+
+    if (session.adhoc_vehicle) {
+      const adhocStr = session.adhoc_vehicle;
+      if (adhocStr.includes(" - ")) {
+        const parts = adhocStr.split(" - ");
+        driverName = parts[0].trim();
+        vehicleNo = parts.slice(1).join(" - ").replace(" *", "").trim();
+      } else {
+        driverName = adhocStr;
+        vehicleNo = 'Temp Vehicle';
+      }
+    }
     
     // stable key
     const key = session.adhoc_vehicle ? `adhoc-${session.adhoc_vehicle}` : `${session.vehicle_id || 'no-veh'}`;

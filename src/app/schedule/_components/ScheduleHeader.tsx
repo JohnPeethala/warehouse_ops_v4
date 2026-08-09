@@ -134,8 +134,20 @@ export function ScheduleHeader({
         const gt2Name = profiles.find(p => p.id === session.gt2_id)?.name || session.adhoc_gt2 || "";
         const dateStr = t.scheduled_date ? format(new Date(t.scheduled_date), "dd-MMM-yyyy") : "";
 
-        const driverNameStr = session.adhoc_vehicle || (vehicle ? vehicle.driver_name || "" : "");
-        const vehicleNoStr = session.adhoc_vehicle ? "Temp Vehicle" : (vehicle ? vehicle.vehicle_no || "" : "");
+        let driverNameStr = vehicle ? vehicle.driver_name || "" : "";
+        let vehicleNoStr = vehicle ? vehicle.vehicle_no || "" : "";
+
+        if (session.adhoc_vehicle) {
+          const adhocStr = session.adhoc_vehicle;
+          if (adhocStr.includes(" - ")) {
+            const parts = adhocStr.split(" - ");
+            driverNameStr = parts[0].trim();
+            vehicleNoStr = parts.slice(1).join(" - ").replace(" *", "").trim();
+          } else {
+            driverNameStr = adhocStr;
+            vehicleNoStr = "Temp Vehicle";
+          }
+        }
 
         return [
           dateStr, t.route || "-", driverNameStr, vehicleNoStr,
@@ -173,8 +185,20 @@ export function ScheduleHeader({
         const gt1Name = profiles.find(p => p.id === session.gt1_id)?.name || session.adhoc_gt1 || "";
         const gt2Name = profiles.find(p => p.id === session.gt2_id)?.name || session.adhoc_gt2 || "";
         const dateStr = session.trip_date ? format(new Date(session.trip_date), "dd-MMM-yyyy") : "";
-        const driverNameStr = session.adhoc_vehicle || (vehicle ? vehicle.driver_name || "" : "");
-        const vehicleNoStr = session.adhoc_vehicle ? "Temp Vehicle" : (vehicle ? vehicle.vehicle_no || "" : "");
+        let driverNameStr = vehicle ? vehicle.driver_name || "" : "";
+        let vehicleNoStr = vehicle ? vehicle.vehicle_no || "" : "";
+
+        if (session.adhoc_vehicle) {
+          const adhocStr = session.adhoc_vehicle;
+          if (adhocStr.includes(" - ")) {
+            const parts = adhocStr.split(" - ");
+            driverNameStr = parts[0].trim();
+            vehicleNoStr = parts.slice(1).join(" - ").replace(" *", "").trim();
+          } else {
+            driverNameStr = adhocStr;
+            vehicleNoStr = "Temp Vehicle";
+          }
+        }
         
         return [
           dateStr, 

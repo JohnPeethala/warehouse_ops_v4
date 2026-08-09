@@ -79,8 +79,15 @@ export function ReportsManager({ initialData }: Props) {
             
             const v = vehicles.find(x => x.id === s.vehicle_id);
             if (s.adhoc_vehicle) {
-              driverName = s.adhoc_vehicle as string;
-              vehicleNo = "Temp Vehicle";
+              const adhocStr = s.adhoc_vehicle as string;
+              if (adhocStr.includes(" - ")) {
+                const parts = adhocStr.split(" - ");
+                driverName = parts[0].trim();
+                vehicleNo = parts.slice(1).join(" - ").replace(" *", "").trim();
+              } else {
+                driverName = adhocStr;
+                vehicleNo = "Temp Vehicle";
+              }
             } else if (v) {
               driverName = v.driver_name || "";
               vehicleNo = v.vehicle_no || "";
@@ -126,8 +133,15 @@ export function ReportsManager({ initialData }: Props) {
 
           const v = vehicles.find(x => x.id === s.vehicle_id);
           if (s.adhoc_vehicle) {
-            driverName = s.adhoc_vehicle as string;
-            vehicleNo = "Temp Vehicle";
+            const adhocStr = s.adhoc_vehicle as string;
+            if (adhocStr.includes(" - ")) {
+              const parts = adhocStr.split(" - ");
+              driverName = parts[0].trim();
+              vehicleNo = parts.slice(1).join(" - ").replace(" *", "").trim();
+            } else {
+              driverName = adhocStr;
+              vehicleNo = "Temp Vehicle";
+            }
           } else if (v) {
             driverName = v.driver_name || "";
             vehicleNo = v.vehicle_no || "";

@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { CheckCircle2, Circle } from "lucide-react";
 import { EntityDropdown } from "./cells/EntityDropdown";
 import { useScheduleContext } from "./ScheduleContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toTitleCase } from "@/lib/utils";
 
 export function RouteGroupHeader({
   group,
@@ -21,6 +25,10 @@ export function RouteGroupHeader({
   gtProfiles: any[];
 }) {
   const { selectedIds, setSelectedIds, handleRouteSessionUpdate } = useScheduleContext();
+  
+  const [isTempVehicleModalOpen, setIsTempVehicleModalOpen] = useState(false);
+  const [tempDriverSearch, setTempDriverSearch] = useState("");
+  const [tempVehicleNo, setTempVehicleNo] = useState("");
   
   const isUnassigned = !group.route;
   const routeSession = group.tickets[0]?.ops_route_sessions || {};
@@ -130,8 +138,9 @@ export function RouteGroupHeader({
                       onOpenVehicleModal(search, { route: group.route, date: tripDate, type: 'vehicle' });
                     }}
                     onAddAdhoc={(search) => {
-                      const formatted = `${toTitleCase(search)} *`;
-                      handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: null, adhoc_vehicle: formatted });
+                      setTempDriverSearch(search);
+                      setTempVehicleNo("");
+                      setIsTempVehicleModalOpen(true);
                     }}
                     addAdhocText="Add '{search}' as Temp Driver *"
                   />
@@ -247,6 +256,37 @@ export function RouteGroupHeader({
             )}
           </div>
         </div>
+        
+        <Dialog open={isTempVehicleModalOpen} onOpenChange={setIsTempVehicleModalOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Temporary Vehicle Details</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">Driver Name</span>
+                <Input value={toTitleCase(tempDriverSearch)} disabled className="bg-muted" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">Vehicle No.</span>
+                <Input 
+                  placeholder="e.g. MH 12 AB 1234" 
+                  value={tempVehicleNo} 
+                  onChange={(e) => setTempVehicleNo(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsTempVehicleModalOpen(false)}>Cancel</Button>
+              <Button onClick={() => {
+                const formatted = `${toTitleCase(tempDriverSearch)} - ${tempVehicleNo.toUpperCase()} *`;
+                handleRouteSessionUpdate(group.route, tripDate, { vehicle_id: null, adhoc_vehicle: formatted });
+                setIsTempVehicleModalOpen(false);
+              }}>Save Temporary Driver</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </td>
     </tr>
   );

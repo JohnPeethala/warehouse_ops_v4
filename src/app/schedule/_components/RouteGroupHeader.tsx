@@ -124,8 +124,8 @@ export function RouteGroupHeader({
                       ...vehicleDriverOptions.filter((o: any) => !assignedVehicleIds.has(o.id) || o.id === routeSession.vehicle_id)
                     ]}
                     placeholder="Select..."
-                    widthClass="w-[160px]"
-                    dropdownWidthClass="w-[160px]"
+                    widthClass="w-[200px]"
+                    dropdownWidthClass="w-[200px]"
                     onCreateNew={(search) => {
                       onOpenVehicleModal(search, { route: group.route, date: tripDate, type: 'vehicle' });
                     }}

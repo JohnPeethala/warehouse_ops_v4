@@ -8,7 +8,6 @@ import { useSubCategorySettings } from "@/components/providers/SubCategoryProvid
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { getCategoryDetails } from "@/lib/categoryUtils";
-import { DatePicker } from "@/components/ui/date-picker";
 
 const SubCategoryDropdown = ({ 
   value, 
@@ -95,27 +94,20 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   onTicketsAdded: (newLogs: any[]) => void;
+  selectedDate: string;
 };
 
-export function AddTicketsModal({ isOpen, onClose, onTicketsAdded }: Props) {
+export function AddTicketsModal({ isOpen, onClose, onTicketsAdded, selectedDate }: Props) {
   const subCategories = useSubCategorySettings();
   const [entries, setEntries] = useState<TicketEntry[]>([
     { id: "1", ticketIdInput: "", loading: false, overrides: {} }
   ]);
   const [submitting, setSubmitting] = useState(false);
 
-  const today = new Date();
-  const tzOffset = today.getTimezoneOffset() * 60000;
-  const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().slice(0, -1);
-  const todayStr = localISOTime.split('T')[0];
-
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setEntries([{ id: crypto.randomUUID(), ticketIdInput: "", loading: false, overrides: {} }]);
-      setSelectedDate(todayStr);
     }
   }, [isOpen]);
 
@@ -264,22 +256,18 @@ export function AddTicketsModal({ isOpen, onClose, onTicketsAdded }: Props) {
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/20 shrink-0 sticky top-0 z-10">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Add Tickets to Schedule</h2>
-            <p className="text-sm text-muted-foreground">Search by Ticket ID and verify data before adding.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-40">
-              <DatePicker 
-                value={selectedDate}
-                onChange={setSelectedDate}
-                showTicketCounts={false}
-              />
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">Add Tickets to Schedule</h2>
+            <div className="bg-primary/10 text-primary px-2.5 py-1 rounded-md text-sm font-medium border border-primary/20">
+              {selectedDate}
             </div>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-              <X className="w-5 h-5" />
-            </button>
           </div>
+          <button 
+            onClick={onClose}
+            className="text-muted-foreground hover:bg-muted p-1.5 rounded-md transition-colors"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Content */}

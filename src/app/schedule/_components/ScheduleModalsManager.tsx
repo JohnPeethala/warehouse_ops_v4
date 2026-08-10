@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { useSearchParams } from "next/navigation";
+import { format } from "date-fns";
 import { useScheduleContext } from "./ScheduleContext";
 import { AddTicketsModal } from "./AddTicketsModal";
 import { SummaryModal } from "./SummaryModal";
@@ -26,6 +28,9 @@ export function ScheduleModalsManager({
   isNotDoneModalOpen: boolean;
   setIsNotDoneModalOpen: (open: boolean) => void;
 }) {
+  const searchParams = useSearchParams();
+  const selectedDateStr = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
+
   const {
     filteredGroupedData,
     logs,
@@ -40,20 +45,21 @@ export function ScheduleModalsManager({
       <AddTicketsModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
-        onTicketsAdded={handleAddLogs} 
+        onTicketsAdded={handleAddLogs}
+        selectedDate={selectedDateStr}
       />
 
       <SummaryModal 
         isOpen={isSummaryModalOpen} 
         onClose={() => setIsSummaryModalOpen(false)} 
-        date={logs[0]?.scheduled_date || ""} 
+        date={selectedDateStr} 
         tickets={filteredGroupedData.flatMap(g => g.tickets)} 
       />
 
       <ProgressSummaryModal 
         isOpen={isProgressModalOpen} 
         onClose={() => setIsProgressModalOpen(false)} 
-        date={logs[0]?.scheduled_date || ""} 
+        date={selectedDateStr} 
         tickets={filteredGroupedData.flatMap(g => g.tickets)} 
         vehicles={vehicles}
         profiles={profiles}
@@ -63,7 +69,7 @@ export function ScheduleModalsManager({
       <NotDoneSummaryModal 
         isOpen={isNotDoneModalOpen} 
         onClose={() => setIsNotDoneModalOpen(false)} 
-        date={logs[0]?.scheduled_date || ""} 
+        date={selectedDateStr} 
         tickets={filteredGroupedData.flatMap(g => g.tickets)} 
         vehicles={vehicles}
         profiles={profiles}

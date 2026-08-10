@@ -90,12 +90,20 @@ export function GroundTeamCard({ gt, categories, lookups }: GroundTeamCardProps)
     return <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${classes}`}>{subStatus}</span>;
   };
 
+  const isCompleted = gt.total > 0 && gt.pending === 0;
+  const cardBorderClass = isCompleted 
+    ? "border-2 border-green-500/50 shadow-green-500/10 shadow-md ring-1 ring-inset ring-green-500/50 bg-green-50/50 dark:bg-green-900/10" 
+    : "border border-border/50 bg-card shadow-sm";
+
   return (
-    <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+    <div className={`rounded-2xl overflow-hidden flex flex-col transition-all ${cardBorderClass}`}>
       {/* GT Header */}
       <div className="p-4 bg-muted/30 border-b border-border/50 flex justify-between items-center">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
+            {isCompleted && (
+              <LucideIcons.CheckCircle2 size={18} className="text-green-500" />
+            )}
             <span className="text-sm font-bold text-foreground uppercase tracking-wider">
               {gt.name}
             </span>
@@ -121,69 +129,24 @@ export function GroundTeamCard({ gt, categories, lookups }: GroundTeamCardProps)
         </div>
         <div className="flex items-center gap-4 text-right pr-2">
           {/* GT Stats */}
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1.5">Stats</span>
-            <div className="flex gap-4">
-              <div className="text-center" title="Done"><p className="text-sm font-bold text-green-600 leading-none">{gt.done}</p></div>
-              <div className="text-center" title="Pending"><p className="text-sm font-bold text-amber-500 leading-none">{gt.pending}</p></div>
-              <div className="text-center" title="Not Done"><p className="text-sm font-bold text-red-600 leading-none">{gt.notDone}</p></div>
+          <div className="flex items-stretch py-1">
+            <div className="flex flex-col items-center justify-between mr-5 pr-5 border-r-2 border-border/70" title="Total Tasks">
+              <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1.5">Total</span>
+              <span className="text-[15px] font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-2.5 py-0.5 rounded border border-blue-200 dark:border-blue-500/20 leading-none shadow-sm">{gt.total}</span>
+            </div>
+            <div className="flex flex-col items-center justify-between">
+              <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1.5">Breakdown</span>
+              <div className="flex gap-4 items-center h-full">
+                <div className="text-center" title="Done"><p className="text-[15px] font-bold text-green-600 leading-none">{gt.done}</p></div>
+                <div className="text-center" title="Pending"><p className="text-[15px] font-bold text-amber-500 leading-none">{gt.pending}</p></div>
+                <div className="text-center" title="Not Done"><p className="text-[15px] font-bold text-red-600 leading-none">{gt.notDone}</p></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* GT Tickets Table */}
-      {gt.tickets.length > 0 && (
-        <div className="flex-1 overflow-x-auto bg-card">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-muted/10 text-muted-foreground sticky top-0 uppercase tracking-widest text-[10px] font-bold border-b border-border/50">
-              <tr>
-                <th className="px-4 py-2.5 font-medium w-28">Ticket</th>
-                <th className="px-4 py-2.5 font-medium w-16 text-center">Type</th>
-                <th className="px-4 py-2.5 font-medium">Customer</th>
-                <th className="px-4 py-2.5 font-medium">Location</th>
-                <th className="px-4 py-2.5 font-medium w-24 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/30">
-              {gt.tickets.map(t => {
-                const group = t.sub_category || "Other";
-                const cat = categories.find(c => c.name.toLowerCase() === group.toLowerCase());
-                const SubIcon = cat?.icon_name ? (LucideIcons as any)[cat.icon_name] || LucideIcons.Square : LucideIcons.Square;
-                const subColor = cat?.color || "#94a3b8";
-
-                return (
-                  <tr key={t.id} className="hover:bg-muted/10 transition-colors">
-                    <td className="px-4 py-2 font-medium whitespace-nowrap">
-                      <a 
-                        href={`https://desk.zoho.com/agent/cityfurnish1/support/all-modules/search?searchDept=currentDept&searchWord=${t.ticket_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline hover:text-primary/80 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {t.ticket_id}
-                      </a>
-                    </td>
-                    <td className="px-4 py-2 text-center" title={group}>
-                      <SubIcon size={14} className="mx-auto" style={{ color: subColor }} />
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground truncate max-w-[120px] font-medium" title={t.contact_name || ""}>
-                      {t.contact_name || "-"}
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground truncate max-w-[120px] font-medium" title={t.location || ""}>
-                      {t.location || "-"}
-                    </td>
-                    <td className="px-4 py-2 text-right whitespace-nowrap">
-                      {getSubStatusBadge(t.status || "Pending", t.sub_status)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
+
+

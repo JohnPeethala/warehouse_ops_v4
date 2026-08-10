@@ -234,6 +234,9 @@ export function LiveTrackerClient({ initialTickets, lookups, categories, targetD
     );
   }
 
+  const activeGTs = gtData.filter(gt => gt.pending > 0 || gt.total === 0);
+  const completedGTs = gtData.filter(gt => gt.pending === 0 && gt.total > 0);
+
   return (
     <>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
@@ -310,10 +313,26 @@ export function LiveTrackerClient({ initialTickets, lookups, categories, targetD
             {gtData.length} Teams Active
           </span>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {gtData.map((gt, i) => (
-            <GroundTeamCard key={i} gt={gt} categories={categories} lookups={lookups} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-1">
+          {activeGTs.map((gt, i) => (
+            <GroundTeamCard key={`active-${i}`} gt={gt} categories={categories} lookups={lookups} />
           ))}
+
+          {completedGTs.length > 0 && (
+            <div className="col-span-full mt-4 mb-2 flex items-center gap-4">
+              <div className="h-px bg-border/50 flex-1"></div>
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-green-500" />
+                Completed Teams
+              </span>
+              <div className="h-px bg-border/50 flex-1"></div>
+            </div>
+          )}
+
+          {completedGTs.map((gt, i) => (
+            <GroundTeamCard key={`completed-${i}`} gt={gt} categories={categories} lookups={lookups} />
+          ))}
+
           {gtData.length === 0 && (
             <div className="col-span-full py-12 text-center bg-muted/20 border border-border border-dashed rounded-2xl">
               <p className="text-muted-foreground font-medium mb-1">No active teams for today.</p>

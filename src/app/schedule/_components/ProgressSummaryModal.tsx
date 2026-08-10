@@ -27,18 +27,19 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets, vehicles,
 
   // --- PROGRESS MATRIX LOGIC ---
   const baseTotalTickets = tickets.length;
-  const matrix: Record<string, { total: number; delivered: number; notDone: number }> = {};
+  const matrix: Record<string, { total: number; delivered: number; notDone: number; driverND: number }> = {};
   
   let totalDelivered = 0;
   let totalPending = 0;
   let totalIssues = 0;
+  let totalDriverND = 0;
 
   tickets.forEach(t => {
     const sub = t.sub_category || "Other";
     const s = t.status || "Pending";
     
     if (!matrix[sub]) {
-      matrix[sub] = { total: 0, delivered: 0, notDone: 0 };
+      matrix[sub] = { total: 0, delivered: 0, notDone: 0, driverND: 0 };
     }
     
     matrix[sub].total++;
@@ -51,6 +52,10 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets, vehicles,
     } else {
       matrix[sub].notDone++;
       totalIssues++;
+      if (t.sub_status && (t.sub_status.toLowerCase().includes('driver') || t.sub_status.toLowerCase().includes('vehicle'))) {
+        matrix[sub].driverND++;
+        totalDriverND++;
+      }
     }
   });
 
@@ -253,6 +258,7 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets, vehicles,
                         <th className="px-2 py-2.5 text-center text-gray-900">Total</th>
                         <th className="px-2 py-2.5 text-center text-green-600">Done</th>
                         <th className="px-2 py-2.5 text-center text-red-600">Not Done</th>
+                        <th className="px-2 py-2.5 text-center text-amber-600">Veh/Drvr ND</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -268,6 +274,9 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets, vehicles,
                             <td className="px-2 py-2.5 text-center">
                               <span className="font-bold text-red-600">{stats.notDone}</span>
                             </td>
+                            <td className="px-2 py-2.5 text-center">
+                              <span className="font-bold text-amber-600">{stats.driverND}</span>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -282,6 +291,9 @@ export function ProgressSummaryModal({ isOpen, onClose, date, tickets, vehicles,
                           </td>
                           <td className="px-2 py-3 text-center">
                             <span className="text-red-600 font-black text-lg leading-none">{totalIssues}</span>
+                          </td>
+                          <td className="px-2 py-3 text-center">
+                            <span className="text-amber-600 font-black text-lg leading-none">{totalDriverND}</span>
                           </td>
                         </tr>
                     </tfoot>

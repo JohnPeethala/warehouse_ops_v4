@@ -539,6 +539,7 @@ export type Database = {
           adhoc_gt1: string | null
           adhoc_gt2: string | null
           id: string
+          nd_veh_drvr_tickets: number | null
           not_done_tickets: number | null
           pending_tickets: number | null
           starting_km: number | null

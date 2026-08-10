@@ -9,6 +9,7 @@ import { TicketCompositionChart } from "./TicketCompositionChart";
 import { TrendChart } from "./TrendChart";
 import { DailyCrewCarousel } from "./DailyCrewCarousel";
 import { HistoricalTrendChart } from "./HistoricalTrendChart";
+import { TeamTab } from "./TeamTab";
 
 import { toPng, toBlob } from "html-to-image";
 import { toast } from "sonner";
@@ -153,9 +154,9 @@ export function DashboardClient({
           )}
 
           {activeTab === "team" && (
-            <div className="bg-card border border-border border-dashed rounded-xl p-12 shadow-sm h-48 flex items-center justify-center text-muted-foreground">
-              Team & Fleet performance data will go here
-            </div>
+            <motion.div variants={staggerContainer} initial="initial" animate="animate">
+              <TeamTab />
+            </motion.div>
           )}
 
           {activeTab === "overview" && dailyCrewSummary && dailyCrewSummary.length > 0 && (

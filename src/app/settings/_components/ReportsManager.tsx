@@ -122,7 +122,7 @@ export function ReportsManager({ initialData }: Props) {
         headers = [
           "Date", "Route Name", "Vehicle No", "Driver", "GT 1", "GT 2",
           "Starting KM", "Ending KM", "Total KM", "Total Tickets",
-          "Done Tickets", "Not Done Tickets", "Pending Tickets", "Trip ID (UUID)"
+          "Done Tickets", "Not Done Tickets", "Veh/Drvr ND Tickets", "Pending Tickets", "Trip ID (UUID)"
         ];
 
         finalRows = sessions.map((s: Record<string, unknown>) => {
@@ -157,7 +157,7 @@ export function ReportsManager({ initialData }: Props) {
           return [
             dateStr, routeName || "-", vehicleNo, driverName, gt1Name, gt2Name,
             s.starting_km ?? "-", s.ending_km ?? "-", s.total_km ?? "-",
-            s.total_tickets || 0, s.done_tickets || 0, s.not_done_tickets || 0, s.pending_tickets || 0,
+            s.total_tickets || 0, s.done_tickets || 0, s.not_done_tickets || 0, s.nd_veh_drvr_tickets || 0, s.pending_tickets || 0,
             s.id || ""
           ];
         });

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { X, Search, MapPin, Loader2, Navigation, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { HYDERABAD_COORDS, DARK_STYLES, LIGHT_STYLES } from "@/app/planner/_components/mapConfig";
 
 type Props = {
@@ -33,7 +33,9 @@ export function GooglePlacesModal(props: Props) {
   if (!props.isOpen || !mounted) return null;
 
   return createPortal(
-    <GooglePlacesModalInner {...props} />,
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+      <GooglePlacesModalInner {...props} />
+    </APIProvider>,
     document.body
   );
 }
@@ -81,24 +83,27 @@ function GooglePlacesModalInner({ isOpen, onClose, onSelect, initialQuery }: Pro
     handleGeocodeAndSelect(place);
   };
 
+  const geocodingLib = useMapsLibrary('geocoding');
+
   const handleGeocodeAndSelect = async (place: SearchResult) => {
     try {
       const lat = place.geometry.location.lat;
       const lng = place.geometry.location.lng;
 
-      const reverseRes = await fetch(`/api/places/geocode?latlng=${lat},${lng}`);
-      const reverseData = await reverseRes.json();
-      
       let pincode = "";
-      if (reverseData.results && reverseData.results.length > 0) {
-        for (const r of reverseData.results) {
-           r.address_components.forEach((component: { types: string[]; long_name: string }) => {
-            const types = component.types;
-            if (types.includes("postal_code") && !pincode) {
-              pincode = component.long_name;
-            }
-          });
-          if (pincode) break;
+      if (geocodingLib) {
+        const geocoder = new geocodingLib.Geocoder();
+        const response = await geocoder.geocode({ location: { lat, lng } });
+        if (response.results && response.results.length > 0) {
+          for (const r of response.results) {
+             r.address_components.forEach((component: any) => {
+              const types = component.types;
+              if (types.includes("postal_code") && !pincode) {
+                pincode = component.long_name;
+              }
+            });
+            if (pincode) break;
+          }
         }
       }
 
@@ -173,35 +178,33 @@ function GooglePlacesModalInner({ isOpen, onClose, onSelect, initialQuery }: Pro
               </button>
 
              <div className="absolute inset-0 z-0">
-               <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-                    <Map
-                      defaultCenter={currentCenter}
-                      defaultZoom={currentZoom}
-                      gestureHandling={'greedy'}
-                      disableDefaultUI={true}
-                      zoomControl={true}
-                      styles={isDarkMode ? DARK_STYLES : LIGHT_STYLES}
-                    >
-                    <MapBoundsUpdater results={searchResults} selectedLocation={selectedLocation} />
+                <Map
+                  defaultCenter={currentCenter}
+                  defaultZoom={currentZoom}
+                  gestureHandling={'greedy'}
+                  disableDefaultUI={true}
+                  zoomControl={true}
+                  styles={isDarkMode ? DARK_STYLES : LIGHT_STYLES}
+                >
+                <MapBoundsUpdater results={searchResults} selectedLocation={selectedLocation} />
 
-                    {!selectedLocation && searchResults.map((res) => (
-                      <Marker 
-                        key={res.place_id}
-                        position={{ lat: res.geometry.location.lat, lng: res.geometry.location.lng }}
-                        onClick={() => handleMarkerClick(res)}
-                      />
-                    ))}
+                {!selectedLocation && searchResults.map((res) => (
+                  <Marker 
+                    key={res.place_id}
+                    position={{ lat: res.geometry.location.lat, lng: res.geometry.location.lng }}
+                    onClick={() => handleMarkerClick(res)}
+                  />
+                ))}
 
-                  {selectedLocation && (
-                    <DraggableMarker 
-                      position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
-                      onDragEnd={(lat, lng) => {
-                        setSelectedLocation(prev => prev ? { ...prev, lat, lng } : null);
-                      }}
-                    />
-                  )}
-                  </Map>
-                </APIProvider>
+              {selectedLocation && (
+                <DraggableMarker 
+                  position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
+                  onDragEnd={(lat, lng) => {
+                    setSelectedLocation(prev => prev ? { ...prev, lat, lng } : null);
+                  }}
+                />
+              )}
+              </Map>
             </div>
 
             {/* Confirm Button Layer */}
@@ -283,14 +286,13 @@ function PlacesSearch({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  
+  const placesLib = useMapsLibrary('places');
+
   useEffect(() => {
-    inputRef.current?.focus();
-    if (inputRef.current) {
-       inputRef.current.selectionStart = inputRef.current.value.length;
-       inputRef.current.selectionEnd = inputRef.current.value.length;
-    }
     // Auto-search if initial query is provided
     if (initialQuery && !results.length) {
+       setValue(initialQuery);
        // Timeout ensures state is fully mounted and value is available
        setTimeout(() => {
          const btn = document.getElementById('hidden-search-trigger');
@@ -298,6 +300,14 @@ function PlacesSearch({
        }, 50);
     }
   }, [initialQuery]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    if (inputRef.current) {
+       inputRef.current.selectionStart = inputRef.current.value.length;
+       inputRef.current.selectionEnd = inputRef.current.value.length;
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedArea && value !== selectedArea) {
@@ -321,22 +331,34 @@ function PlacesSearch({
       return;
     }
     
+    if (!placesLib) return;
+
     setIsProcessing(true);
     try {
-      const res = await fetch(`/api/places/textsearch?query=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-
-      if (data.status === "OK" && data.results) {
-        onSearchResults(data.results.slice(0, 10)); // Top 10 results max
-        setStatus("OK");
-      } else {
-        onSearchResults([]);
-        setStatus("ZERO_RESULTS");
-      }
+      const service = new placesLib.PlacesService(document.createElement('div'));
+      service.textSearch({ query: searchQuery }, (res, searchStatus) => {
+        if (searchStatus === placesLib.PlacesServiceStatus.OK && res) {
+          onSearchResults(res.slice(0, 10).map((r: any) => ({
+             place_id: r.place_id,
+             name: r.name,
+             formatted_address: r.formatted_address,
+             geometry: {
+               location: {
+                 lat: r.geometry.location.lat(),
+                 lng: r.geometry.location.lng()
+               }
+             }
+          })));
+          setStatus("OK");
+        } else {
+          onSearchResults([]);
+          setStatus("ZERO_RESULTS");
+        }
+        setIsProcessing(false);
+      });
     } catch (e) {
       onSearchResults([]);
       setStatus("ZERO_RESULTS");
-    } finally {
       setIsProcessing(false);
     }
   };

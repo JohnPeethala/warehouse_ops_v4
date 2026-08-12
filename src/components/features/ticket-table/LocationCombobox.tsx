@@ -201,7 +201,9 @@ export function LocationCombobox({ ticketId, stagedTicketId, initialLocation, in
             </CommandList>
             <div className="p-2 border-t border-border/30 bg-muted/30">
               <button
-                onClick={() => {
+                type="button"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
                   setOpen(false);
                   setIsModalOpen(true);
                 }}

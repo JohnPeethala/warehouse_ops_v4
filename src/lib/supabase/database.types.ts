@@ -329,27 +329,6 @@ export type Database = {
           },
         ]
       }
-      ops_custom_batch: {
-        Row: {
-          id: number
-          ticket_ids: string[]
-          updated_at: string | null
-          updated_by: string | null
-        }
-        Insert: {
-          id?: number
-          ticket_ids?: string[]
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Update: {
-          id?: number
-          ticket_ids?: string[]
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
       ops_dispatch_log: {
         Row: {
           address: string | null

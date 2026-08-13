@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { getCategoryDetails } from "@/lib/categoryUtils";
 import { useSubCategorySettings } from "@/components/providers/SubCategoryProvider";
 import { updateAnnotation } from "@/app/actions/annotations";
+import { updateTicketLocation } from "@/app/actions/geo";
 import { TicketTableHeader } from "./TicketTableHeader";
 import { TicketTableRow } from "./TicketTableRow";
 
@@ -168,9 +169,14 @@ export function TicketTable({
                       });
                       return nextMap;
                     });
-                    const promises = Array.from(selectedIds).map(id => {
+                    const promises = Array.from(selectedIds).map(async id => {
                       const t = data.find(x => x.id === id);
-                      if (t) return updateTicketLocation(t.ticket_id, t.id, area, pincode);
+                      if (t) {
+                        const res = await updateTicketLocation(t.ticket_id, t.id, area, pincode);
+                        if (res?.success === false) {
+                           toast.error(res.error || `Failed to update location for ticket ${t.ticket_id}`);
+                        }
+                      }
                     });
                     await Promise.all(promises);
                     setSelectedIds(new Set());
@@ -179,7 +185,10 @@ export function TicketTable({
                       ...prev,
                       [ticket.ticket_id]: { ...(prev[ticket.ticket_id] || ticket.annotation || { ticket_id: ticket.ticket_id }), location: area, pincode: pincode }
                     }));
-                    await updateTicketLocation(ticket.ticket_id, ticket.id, area, pincode);
+                    const res = await updateTicketLocation(ticket.ticket_id, ticket.id, area, pincode);
+                    if (res?.success === false) {
+                       toast.error(res.error || "Failed to update location");
+                    }
                   }
                 };
 

@@ -45,14 +45,14 @@ export default function RootLayout({
         }} />
       </head>
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased h-screen overflow-hidden text-foreground bg-background`}
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased h-screen overflow-hidden text-foreground bg-background print:h-auto print:overflow-visible print:bg-white print:text-black`}
       >
         <MobileBlocker>
         <ProgressBarProvider>
           <NotificationProvider>
             <SubCategoryProvider>
             <div className="relative h-screen w-full bg-background overflow-hidden">
-              <div className="absolute inset-0 z-0 pointer-events-none bg-pattern-dot opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 z-0 pointer-events-none bg-pattern-dot opacity-100 transition-opacity duration-500 print:hidden" />
             
             <div className="relative z-10 flex h-full w-full">
               {/* Desktop Sidebar */}

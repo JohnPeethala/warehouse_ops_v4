@@ -517,6 +517,7 @@ export type Database = {
           gt2_id: string | null
           adhoc_gt1: string | null
           adhoc_gt2: string | null
+          adhoc_vehicle: string | null
           id: string
           nd_veh_drvr_tickets: number | null
           not_done_tickets: number | null
@@ -537,7 +538,8 @@ export type Database = {
           gt2_id?: string | null
           adhoc_gt1?: string | null
           adhoc_gt2?: string | null
-          id?: string
+            adhoc_vehicle?: string | null
+            id?: string
           not_done_tickets?: number | null
           pending_tickets?: number | null
           starting_km?: number | null
@@ -556,7 +558,8 @@ export type Database = {
           gt2_id?: string | null
           adhoc_gt1?: string | null
           adhoc_gt2?: string | null
-          id?: string
+            adhoc_vehicle?: string | null
+            id?: string
           not_done_tickets?: number | null
           pending_tickets?: number | null
           starting_km?: number | null

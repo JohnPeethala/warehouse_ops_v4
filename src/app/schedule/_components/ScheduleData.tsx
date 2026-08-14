@@ -24,7 +24,7 @@ export async function ScheduleData({ date }: { date?: string }) {
           gt1_id,
           gt2_id,
           adhoc_gt1,
-          adhoc_gt2,
+          adhoc_gt2, adhoc_vehicle,
           trip_date,
           starting_km,
           ending_km,

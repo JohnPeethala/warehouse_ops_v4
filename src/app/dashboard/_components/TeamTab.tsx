@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Truck, AlertCircle, Copy, Download, Loader2 } from "lucide-react";
 import { getDriverMatrixData, getGtMatrixData } from "@/app/actions/teamFleet";
 import type { DriverMatrixRow, GtMatrixRow } from "@/app/actions/teamFleet";
@@ -168,8 +169,19 @@ export function TeamTab() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      {/* Driver Matrix Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col"
+      >
         <div className="p-4 border-b border-border flex justify-between items-center bg-gradient-to-r from-muted/30 to-transparent">
           <div>
             <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
@@ -317,9 +329,15 @@ export function TeamTab() {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col mt-6">
+      {/* GT Matrix Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col mt-6"
+      >
         <div className="p-4 border-b border-border flex justify-between items-center bg-gradient-to-r from-muted/30 to-transparent">
           <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
             <Truck className="text-primary" size={20} />
@@ -475,7 +493,7 @@ export function TeamTab() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

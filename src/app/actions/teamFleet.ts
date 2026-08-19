@@ -29,8 +29,8 @@ export async function getDriverMatrixData(
 
     // Calculate dates
     const [year, month] = monthStr.split("-").map(Number);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0); // last day of month
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999)); // last day of month
 
     const startStr = startDate.toISOString().split("T")[0];
     const endStr = endDate.toISOString().split("T")[0];
@@ -97,6 +97,7 @@ export async function getDriverMatrixData(
 
     // Process Route Sessions
     (routeSessions || []).forEach(s => {
+      if (s.trip_date) s.trip_date = s.trip_date.split('T')[0];
       const driver = getDriverName(s);
       if (driver === "Unassigned") return;
 
@@ -142,7 +143,7 @@ export async function getDriverMatrixData(
       const dailyData: Record<string, DailyStats> = {};
       
       // Generate keys for every day of the month
-      const daysInMonth = endDate.getDate();
+      const daysInMonth = new Date(year, month, 0).getDate();
       for (let i = 1; i <= daysInMonth; i++) {
         const dDate = new Date(year, month - 1, i);
         // Correctly format local date safely to YYYY-MM-DD
@@ -187,6 +188,7 @@ export async function getDriverMatrixData(
 }
 
 export type GtMatrixRow = {
+  isAdhoc?: boolean;
   gtName: string;
   daysArrived: number;
   totalTickets: number;
@@ -232,15 +234,15 @@ export async function getGtMatrixData(
     const gtsMap: Record<string, any> = {};
 
     const getGt1Name = (session: any) => {
-      if (session.gt1?.name) return session.gt1.name;
-      if (session.adhoc_gt1) return session.adhoc_gt1;
-      return null;
-    };
+        if (session.gt1?.name) return { name: session.gt1.name, isAdhoc: false };
+        if (session.adhoc_gt1) return { name: session.adhoc_gt1, isAdhoc: true };
+        return null;
+      };
     const getGt2Name = (session: any) => {
-      if (session.gt2?.name) return session.gt2.name;
-      if (session.adhoc_gt2) return session.adhoc_gt2;
-      return null;
-    };
+        if (session.gt2?.name) return { name: session.gt2.name, isAdhoc: false };
+        if (session.adhoc_gt2) return { name: session.adhoc_gt2, isAdhoc: true };
+        return null;
+      };
     const getDriverName = (session: any) => {
       if (session.adhoc_vehicle) {
         if (session.adhoc_vehicle.includes(" - ")) {
@@ -251,10 +253,11 @@ export async function getGtMatrixData(
       return session.core_vehicles?.driver_name || "Unassigned";
     };
 
-    const initGt = (name: string) => {
+    const initGt = (name: string, isAdhoc: boolean) => {
       if (!gtsMap[name]) {
-        gtsMap[name] = {
-          gtName: name,
+          gtsMap[name] = {
+            gtName: name,
+            isAdhoc: isAdhoc,
           daysArrivedSet: new Set(),
           totalTickets: 0,
           tasksDone: 0,
@@ -267,17 +270,20 @@ export async function getGtMatrixData(
     };
 
     (routeSessions || []).forEach(s => {
+      if (s.trip_date) s.trip_date = s.trip_date.split('T')[0];
       const g1 = getGt1Name(s);
       const g2 = getGt2Name(s);
       const driver = getDriverName(s);
 
-      const processGt = (gName: string | null) => {
+      const processGt = (gObjInfo: {name: string, isAdhoc: boolean} | null) => {
+          const gName = gObjInfo?.name;
         if (!gName || gName === "Unassigned") return;
         
-        const gObj = initGt(gName);
+        const gObj = initGt(gName, gObjInfo!.isAdhoc);
 
         // Is it in the selected month?
         if (s.trip_date >= startStr && s.trip_date <= endStr) {
+          console.log(`Processing GT: ${gName} for Date: ${s.trip_date} | Total: ${s.total_tickets} | KM: ${s.total_km}`);
           gObj.daysArrivedSet.add(s.trip_date);
           gObj.totalTickets += (s.total_tickets || 0);
           gObj.tasksDone += (s.done_tickets || 0);
@@ -311,7 +317,7 @@ export async function getGtMatrixData(
     const result: GtMatrixRow[] = Object.values(gtsMap).map((d: any) => {
       const dailyData: Record<string, DailyStats> = {};
       
-      const daysInMonth = endDate.getDate();
+      const daysInMonth = new Date(year, month, 0).getDate();
       for (let i = 1; i <= daysInMonth; i++) {
         const dDate = new Date(year, month - 1, i);
         const y = dDate.getFullYear();
@@ -334,7 +340,8 @@ export async function getGtMatrixData(
       }
 
       return {
-        gtName: d.gtName,
+          gtName: d.gtName,
+          isAdhoc: d.isAdhoc,
         daysArrived: d.daysArrivedSet.size,
         totalTickets: d.totalTickets,
         tasksDone: d.tasksDone,

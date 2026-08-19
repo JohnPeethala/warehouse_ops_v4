@@ -159,9 +159,12 @@ export function TeamTab() {
     notDoneTotal: gtData.reduce((acc, r) => acc + r.notDoneTotal, 0),
     totalKm: gtData.reduce((acc, r) => acc + r.totalKm, 0),
   };
-  const gtDailyCounts: Record<string, number> = {};
+  const gtDailyCounts: Record<string, { regular: number; adhoc: number }> = {};
   monthDaysHeaders.forEach(h => {
-    gtDailyCounts[h.dateStr] = gtData.filter(r => r.dailyData[h.dateStr] && r.dailyData[h.dateStr].total > 0).length;
+    const activeGts = gtData.filter(r => r.dailyData[h.dateStr] && (r.dailyData[h.dateStr].total > 0 || r.dailyData[h.dateStr].km > 0));
+    const regular = activeGts.filter(r => !r.isAdhoc).length;
+    const adhoc = activeGts.filter(r => r.isAdhoc).length;
+    gtDailyCounts[h.dateStr] = { regular, adhoc };
   });
 
   return (
@@ -271,7 +274,7 @@ export function TeamTab() {
                       <tr key={row.driver} className="h-[36px] hover:bg-muted/30 transition-none">
                         {monthDaysHeaders.map(h => {
                           const stats = row.dailyData[h.dateStr];
-                          if (!stats || stats.total === 0) {
+                          if (!stats || (stats.total === 0 && stats.km === 0)) {
                             return <td key={h.dateStr} className={`px-2 py-1 text-center border-b border-r border-border text-muted-foreground/30 ${h.isToday ? 'bg-primary/5' : ''}`}>-</td>;
                           }
                           
@@ -359,14 +362,16 @@ export function TeamTab() {
                   <tbody className="bg-card">
                     {gtData.map((row) => (
                       <tr key={row.gtName} className="h-[36px] hover:bg-muted/30">
-                        <td className="px-2 py-1 font-medium text-foreground border-b border-r border-border truncate max-w-[150px]">{row.gtName}</td>
-                        <td className="px-1 py-1 text-center border-b border-r border-border font-medium">{row.daysArrived}</td>
-                        <td className="px-1 py-1 text-center border-b border-r border-border font-medium text-muted-foreground">{row.totalTickets}</td>
-                        <td className="px-1 py-1 text-center border-b border-r border-border font-semibold text-emerald-600 dark:text-emerald-500">{row.tasksDone}</td>
-                        <td className={`px-1 py-1 text-center border-b border-r border-border font-semibold ${row.notDoneTotal > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                        <td className={`px-2 py-1 font-medium text-foreground border-b border-r border-border truncate max-w-[150px] ${row.isAdhoc ? 'bg-blue-500/10' : ''}`}>
+                          {row.gtName}
+                        </td>
+                        <td className={`px-1 py-1 text-center border-b border-r border-border font-medium ${row.isAdhoc ? 'bg-blue-500/10' : ''}`}>{row.daysArrived}</td>
+                        <td className={`px-1 py-1 text-center border-b border-r border-border font-medium text-muted-foreground ${row.isAdhoc ? 'bg-blue-500/10' : ''}`}>{row.totalTickets}</td>
+                        <td className={`px-1 py-1 text-center border-b border-r border-border font-semibold text-emerald-600 dark:text-emerald-500 ${row.isAdhoc ? 'bg-blue-500/10' : ''}`}>{row.tasksDone}</td>
+                        <td className={`px-1 py-1 text-center border-b border-r border-border font-semibold ${row.notDoneTotal > 0 ? 'text-destructive' : 'text-muted-foreground'} ${row.isAdhoc ? 'bg-blue-500/10' : ''}`}>
                           {row.notDoneTotal > 0 ? row.notDoneTotal : "-"}
                         </td>
-                        <td className="px-1 py-1 text-center border-b border-border text-primary font-semibold">{row.totalKm} km</td>
+                        <td className={`px-1 py-1 text-center border-b border-border font-semibold text-primary ${row.isAdhoc ? 'bg-blue-500/10' : ''}`}>{row.totalKm} km</td>
                       </tr>
                     ))}
                     {gtData.length > 0 && (
@@ -400,28 +405,39 @@ export function TeamTab() {
                       <tr key={row.gtName} className="h-[36px] hover:bg-muted/30 transition-none">
                         {monthDaysHeaders.map(h => {
                           const stats = row.dailyData[h.dateStr];
-                          if (!stats || stats.total === 0) {
+                          if (!stats || (stats.total === 0 && stats.km === 0)) {
                             return <td key={h.dateStr} className={`px-2 py-1 text-center border-b border-r border-border text-muted-foreground/30 ${h.isToday ? 'bg-primary/5' : ''}`}>-</td>;
                           }
                           
                           const hoverNamesStr = stats.hoverNames.length > 0 ? `\nDriver: ${stats.hoverNames.join(', ')}` : '\nNo driver assigned';
                           const hoverText = `Total: ${stats.total}\nDone: ${stats.done}\nNot Done: ${stats.nd}\nKM: ${stats.km}${hoverNamesStr}`;
+                          const isHighKM = stats.km > 85;
                           const hasND = stats.nd > 0;
-                          const isHighKM = Number(stats.km) > 100;
-                          
+                          const bgClass = isHighKM ? 'bg-destructive/10 hover:bg-destructive/20' : (h.isToday ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/50');
+                            
                           return (
                             <td 
                               key={h.dateStr} 
                               title={hoverText}
                               className={`relative px-2 py-1 text-center border-b border-r border-border cursor-help transition-colors
-                                ${isHighKM ? 'bg-destructive/10 hover:bg-destructive/20' : (h.isToday ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/50')}
+                                ${bgClass}
                               `}
                             >
-                              <div className="flex items-center justify-center text-[12px] font-semibold">
-                                <span className={isHighKM ? 'text-destructive' : 'text-foreground'}>{stats.km} km</span>
-                                {hasND && (
-                                  <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 shadow-sm" />
-                                )}
+                              {row.isAdhoc && (
+                                <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-blue-500 ring-1 ring-background shadow-sm" />
+                              )}
+                              {hasND && (
+                                <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rose-500 ring-1 ring-background shadow-sm" />
+                              )}
+                              <div className="flex flex-col items-center justify-center text-[11px] leading-tight">
+                                <div className="font-semibold mb-0.5">
+                                  <span className="text-emerald-600 dark:text-emerald-500">{stats.done}</span>
+                                  <span className="text-muted-foreground mx-0.5">/</span>
+                                  <span className="text-destructive">{stats.nd}</span>
+                                </div>
+                                <span className={isHighKM ? 'text-destructive font-semibold text-[10px]' : 'text-muted-foreground text-[10px]'}>
+                                  {stats.km} km
+                                </span>
                               </div>
                             </td>
                           );
@@ -430,11 +446,27 @@ export function TeamTab() {
                     ))}
                     {gtData.length > 0 && (
                       <tr className="bg-muted/30 font-bold sticky bottom-0 z-10 border-t-2 border-border shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
-                        {monthDaysHeaders.map(h => (
-                          <td key={`total-gt-${h.dateStr}`} className="px-1 py-2 text-center border-r border-border text-foreground">
-                            {gtDailyCounts[h.dateStr] > 0 ? `${gtDailyCounts[h.dateStr]} v` : '-'}
-                          </td>
-                        ))}
+                          {monthDaysHeaders.map(h => {
+                            const counts = gtDailyCounts[h.dateStr];
+                            const showPipe = counts && counts.adhoc > 0;
+                            const totalBgClass = showPipe ? 'bg-blue-500/10' : '';
+                            
+                            return (
+                              <td key={`total-gt-${h.dateStr}`} className={`px-1 py-2 text-center border-r border-border text-foreground text-[11px] ${totalBgClass}`}>
+                                {(counts && (counts.regular > 0 || counts.adhoc > 0)) ? (
+                                  <div className="flex items-center justify-center gap-1 opacity-80">
+                                    <span>{counts.regular}</span>
+                                    {showPipe && (
+                                      <>
+                                        <span className="text-muted-foreground/50">|</span>
+                                        <span className="text-blue-600 dark:text-blue-500">{counts.adhoc}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                ) : '-'}
+                              </td>
+                            );
+                          })}
                       </tr>
                     )}
                   </tbody>

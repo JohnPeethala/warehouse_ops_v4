@@ -283,7 +283,6 @@ export async function getGtMatrixData(
 
         // Is it in the selected month?
         if (s.trip_date >= startStr && s.trip_date <= endStr) {
-          console.log(`Processing GT: ${gName} for Date: ${s.trip_date} | Total: ${s.total_tickets} | KM: ${s.total_km}`);
           gObj.daysArrivedSet.add(s.trip_date);
           gObj.totalTickets += (s.total_tickets || 0);
           gObj.tasksDone += (s.done_tickets || 0);
